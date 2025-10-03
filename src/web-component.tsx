@@ -253,7 +253,6 @@ class EmailBuilderEditor extends HTMLElement {
 
   // --- Helpers --------------------------------------------------
   private __isLikelyConfiguration(obj: any): boolean {
-    console.log('Validating config:', obj);
     if (!obj || typeof obj !== 'object') return false;
     const root = obj.root;
     if (!root || typeof root !== 'object') return false;

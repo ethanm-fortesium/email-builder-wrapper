@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Box, Typography } from '@mui/material';
 
-import { TEditorBlock } from '../../../documents/editor/core';
+import { TEditorBlock } from '../../../documents/editor/core.js';
 import { setDocument, useDocument, useSelectedBlockId } from '../../../documents/editor/EditorContext';
 
 import AvatarSidebarPanel from './input-panels/AvatarSidebarPanel';

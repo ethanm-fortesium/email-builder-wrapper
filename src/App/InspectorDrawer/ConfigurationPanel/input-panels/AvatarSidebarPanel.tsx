@@ -39,7 +39,7 @@ export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: Avatar
     setUploading(true);
 
     const formData = new FormData();
-    formData.append('identifier', 'image-block'); // optional, adjust as needed
+    formData.append('identifier', 'image-block'); 
     formData.append('component', 'wysiwyg');
     formData.append('AccessControl', 'Public');
     formData.append('file', file);

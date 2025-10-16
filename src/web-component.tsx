@@ -1,7 +1,4 @@
 // Web Component wrapper for the Email Builder editor
-// Exposes a custom element <emailbuilder-editor>
-// Emits: emailBuilderReady, emailContentChange
-// Public methods: getHtml(), getDocument()
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -9,9 +6,9 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { renderToStaticMarkup } from '@usewaypoint/email-builder';
 
 // Import existing App + theme 
-import App from './App';
-import theme from './theme';
-import { useDocument, resetDocument } from './documents/editor/EditorContext';
+import App from './App/index.js';
+import theme from './theme.js';
+import { useDocument, resetDocument } from './documents/editor/EditorContext.js';
 
 // Internal React component that hooks into the document store and dispatches events
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {

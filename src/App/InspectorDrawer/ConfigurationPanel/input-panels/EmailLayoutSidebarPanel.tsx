@@ -5,12 +5,12 @@ import { RoundedCornerOutlined } from '@mui/icons-material';
 
 import EmailLayoutPropsSchema, {
   EmailLayoutProps,
-} from '../../../../documents/blocks/EmailLayout/EmailLayoutPropsSchema';
+} from '../../../../documents/blocks/EmailLayout/EmailLayoutPropsSchema.js';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColorInput, { NullableColorInput } from './helpers/inputs/ColorInput';
-import { NullableFontFamily } from './helpers/inputs/FontFamily';
-import SliderInput from './helpers/inputs/SliderInput';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import ColorInput, { NullableColorInput } from './helpers/inputs/ColorInput/index.js';
+import { NullableFontFamily } from './helpers/inputs/FontFamily.js';
+import SliderInput from './helpers/inputs/SliderInput.js';
 
 type EmailLayoutSidebarFieldsProps = {
   data: EmailLayoutProps;

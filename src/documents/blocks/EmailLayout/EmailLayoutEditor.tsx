@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { useCurrentBlockId } from '../../editor/EditorBlock';
-import { setDocument, setSelectedBlockId, useDocument } from '../../editor/EditorContext';
-import EditorChildrenIds from '../helpers/EditorChildrenIds';
+import { useCurrentBlockId } from '../../editor/EditorBlock.js';
+import { setDocument, setSelectedBlockId, useDocument } from '../../editor/EditorContext.js';
+import EditorChildrenIds from '../helpers/EditorChildrenIds/index.js';
 
-import { EmailLayoutProps } from './EmailLayoutPropsSchema';
+import { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
 
 function getFontFamily(fontFamily: EmailLayoutProps['fontFamily']) {
   const f = fontFamily ?? 'MODERN_SANS';
@@ -34,70 +34,62 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
   const childrenIds = props.childrenIds ?? [];
   const document = useDocument();
   const currentBlockId = useCurrentBlockId();
+  const radius = props.borderRadius ?? 0;
 
   return (
     <div
-      onClick={() => {
-        setSelectedBlockId(null);
-      }}
+      onClick={() => { setSelectedBlockId(null); }}
       style={{
         backgroundColor: props.backdropColor ?? '#F5F5F5',
         color: props.textColor ?? '#262626',
         fontFamily: getFontFamily(props.fontFamily),
         fontSize: '16px',
-        fontWeight: '400',
-        letterSpacing: '0.15008px',
-        lineHeight: '1.5',
-        margin: '0',
+        lineHeight: 1.5,
         padding: '32px 0',
         width: '100%',
         minHeight: '100%',
       }}
     >
-      <table
-        align="center"
-        width="100%"
+      <div
         style={{
+          '--canvas-radius': radius ? `${radius}px` : '0px',
           margin: '0 auto',
           maxWidth: '600px',
           backgroundColor: props.canvasColor ?? '#FFFFFF',
-          borderRadius: props.borderRadius ?? undefined,
-          border: (() => {
-            const v = props.borderColor;
-            if (!v) {
-              return undefined;
-            }
-            return `1px solid ${v}`;
-          })(),
-        }}
-        role="presentation"
-        cellSpacing="0"
-        cellPadding="0"
-        border={0}
+          border: props.borderColor ? `1px solid ${props.borderColor}` : undefined,
+          borderRadius: radius || undefined,
+          boxSizing: 'border-box',
+        } as React.CSSProperties}
       >
-        <tbody>
-          <tr style={{ width: '100%' }}>
-            <td>
-              <EditorChildrenIds
-                childrenIds={childrenIds}
-                onChange={({ block, blockId, childrenIds }) => {
-                  setDocument({
-                    [blockId]: block,
-                    [currentBlockId]: {
-                      type: 'EmailLayout',
-                      data: {
-                        ...document[currentBlockId].data,
-                        childrenIds: childrenIds,
+        <table
+          role="presentation"
+          width="100%"
+          cellSpacing={0}
+          cellPadding={0}
+          border={0}
+          style={{ borderCollapse: 'separate', width: '100%' }}
+        >
+          <tbody>
+            <tr style={{ width: '100%' }}>
+              <td style={{ padding: 0 }}>
+                <EditorChildrenIds
+                  childrenIds={childrenIds}
+                  onChange={({ block, blockId, childrenIds }) => {
+                    setDocument({
+                      [blockId]: block,
+                      [currentBlockId]: {
+                        type: 'EmailLayout',
+                        data: { ...document[currentBlockId].data, childrenIds },
                       },
-                    },
-                  });
-                  setSelectedBlockId(blockId);
-                }}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                    });
+                    setSelectedBlockId(blockId);
+                  }}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

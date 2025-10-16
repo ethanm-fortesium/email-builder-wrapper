@@ -3,27 +3,27 @@ import React, { createContext, useContext } from 'react';
 import { EditorBlock as CoreEditorBlock } from './core.js';
 import { useDocument } from './EditorContext.js';
 
-const EditorBlockContext = createContext<string | null>(null);
-export const useCurrentBlockId = () => useContext(EditorBlockContext)!;
+const ReaderBlockContext = createContext<string | null>(null);
+export const useCurrentBlockId = () => useContext(ReaderBlockContext)!;
 
-type EditorBlockProps = {
+type ReaderBlockProps = {
   id: string;
 };
 
 /**
  *
  * @param id - Block id
- * @returns EditorBlock component that loads data from the EditorDocumentContext
+ * @returns ReaderBlock component that loads data from the EditorDocumentContext
  */
-export default function EditorBlock({ id }: EditorBlockProps) {
+export default function ReaderBlock({ id }: ReaderBlockProps) {
   const document = useDocument();
   const block = document[id];
   if (!block) {
     throw new Error('Could not find block');
   }
   return (
-    <EditorBlockContext.Provider value={id}>
+    <ReaderBlockContext.Provider value={id}>
       <CoreEditorBlock {...block} />
-    </EditorBlockContext.Provider>
+    </ReaderBlockContext.Provider>
   );
 }

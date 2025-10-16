@@ -3,9 +3,9 @@ import React from 'react';
 import { ArrowDownwardOutlined, ArrowUpwardOutlined, DeleteOutlined } from '@mui/icons-material';
 import { IconButton, Paper, Stack, SxProps, Tooltip } from '@mui/material';
 
-import { TEditorBlock } from '../../../editor/core';
-import { resetDocument, setSelectedBlockId, useDocument } from '../../../editor/EditorContext';
-import { ColumnsContainerProps } from '../../ColumnsContainer/ColumnsContainerPropsSchema';
+import { TEditorBlock } from '../../../editor/core.js';
+import { resetDocument, setSelectedBlockId, useDocument } from '../../../editor/EditorContext.js';
+import { ColumnsContainerProps } from '../../ColumnsContainer/ColumnsContainerPropsSchema.js';
 
 const sx: SxProps = {
   position: 'absolute',

@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 
-import { TEditorBlock } from '../../../../editor/core';
+import { TEditorBlock } from '../../../../editor/core.js';
 
-import BlocksMenu from './BlocksMenu';
-import DividerButton from './DividerButton';
-import PlaceholderButton from './PlaceholderButton';
+import BlocksMenu from './BlocksMenu.js';
+import DividerButton from './DividerButton.js';
+import PlaceholderButton from './PlaceholderButton.js';
+import { usePreviewMode } from '../../../../../App/TemplatePanel/PreviewModeContext.js';
 
 type Props = {
   placeholder?: boolean;
   onSelect: (block: TEditorBlock) => void;
 };
 export default function AddBlockButton({ onSelect, placeholder }: Props) {
+  const preview = usePreviewMode();
+  if (preview) {
+    return null; // no add button in preview
+  }
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [buttonElement, setButtonElement] = useState<HTMLElement | null>(null);
 

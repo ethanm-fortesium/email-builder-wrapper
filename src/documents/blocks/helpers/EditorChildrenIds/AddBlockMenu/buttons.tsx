@@ -70,8 +70,8 @@ export const BUTTONS: TButtonProps[] = [
       type: 'Image',
       data: {
         props: {
-          url: '#',
-          alt: 'Sample product',
+          url: 'https://placehold.co/600x400?text=Image',
+          alt: 'Sample image',
           contentAlignment: 'middle',
           linkHref: null,
         },
@@ -86,7 +86,7 @@ export const BUTTONS: TButtonProps[] = [
       type: 'Avatar',
       data: {
         props: {
-          imageUrl: '#',
+          imageUrl: 'https://placehold.co/128x128?text=Image',
           shape: 'circle',
         },
         style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },

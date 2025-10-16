@@ -2,23 +2,23 @@ import React from 'react';
 
 import { MonitorOutlined, PhoneIphoneOutlined } from '@mui/icons-material';
 import { Box, Stack, SxProps, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import { Reader } from '@usewaypoint/email-builder';
 
-import EditorBlock from '../../documents/editor/EditorBlock';
+import ReaderBlock from '../../documents/editor/ReaderBlock.js';
+import EditorBlock from '../../documents/editor/EditorBlock.js';
 import {
   setSelectedScreenSize,
   useDocument,
   useSelectedMainTab,
   useSelectedScreenSize,
-} from '../../documents/editor/EditorContext';
-import ToggleInspectorPanelButton from '../InspectorDrawer/ToggleInspectorPanelButton';
+} from '../../documents/editor/EditorContext.js';
+import ToggleInspectorPanelButton from '../InspectorDrawer/ToggleInspectorPanelButton.js';
+import { PreviewModeProvider } from './PreviewModeContext.js';
 
 import DownloadJson from './DownloadJson';
 import HtmlPanel from './HtmlPanel';
 import ImportJson from './ImportJson';
 import JsonPanel from './JsonPanel';
-import MainTabsGroup from './MainTabsGroup';
-import ShareButton from './ShareButton';
+import MainTabsGroup from './MainTabsGroup.js';
 
 export default function TemplatePanel() {
   const document = useDocument();
@@ -50,6 +50,8 @@ export default function TemplatePanel() {
     }
   };
 
+  const isPreview = selectedMainTab === 'preview';
+
   const renderMainPanel = () => {
     switch (selectedMainTab) {
       case 'editor':
@@ -61,7 +63,7 @@ export default function TemplatePanel() {
       case 'preview':
         return (
           <Box sx={mainBoxSx}>
-            <Reader document={document} rootBlockId="root" />
+            <ReaderBlock id="root" />
           </Box>
         );
       case 'html':
@@ -107,12 +109,21 @@ export default function TemplatePanel() {
                 </Tooltip>
               </ToggleButton>
             </ToggleButtonGroup>
-            <ShareButton />
           </Stack>
         </Stack>
         <ToggleInspectorPanelButton />
       </Stack>
-      <Box sx={{ height: 'calc(100vh - 49px)', overflow: 'auto', minWidth: 370 }}>{renderMainPanel()}</Box>
+      <PreviewModeProvider value={isPreview}>
+        <Box
+          sx={{
+            height: 'calc(100vh - 49px)',
+            overflow: 'auto',
+            minWidth: 370,
+          }}
+        >
+          {renderMainPanel()}
+        </Box>
+      </PreviewModeProvider>
     </>
   );
 }

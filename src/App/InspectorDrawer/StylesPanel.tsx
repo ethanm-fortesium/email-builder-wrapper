@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { setDocument, useDocument } from '../../documents/editor/EditorContext';
+import { setDocument, useDocument } from '../../documents/editor/EditorContext.js';
 
-import EmailLayoutSidebarPanel from './ConfigurationPanel/input-panels/EmailLayoutSidebarPanel';
+import EmailLayoutSidebarPanel from './ConfigurationPanel/input-panels/EmailLayoutSidebarPanel.js';
 
 export default function StylesPanel() {
   const block = useDocument().root;

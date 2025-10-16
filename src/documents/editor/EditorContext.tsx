@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
-import getConfiguration from '../../getConfiguration';
+import getConfiguration from '../../getConfiguration/index.js';
 
-import { TEditorConfiguration } from './core';
+import { TEditorConfiguration } from './core.js';
 
 type TValue = {
   document: TEditorConfiguration;

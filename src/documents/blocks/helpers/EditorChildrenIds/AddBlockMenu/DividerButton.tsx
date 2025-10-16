@@ -12,27 +12,17 @@ export default function DividerButton({ buttonElement, onClick }: Props) {
 
   useEffect(() => {
     function listener({ clientX, clientY }: MouseEvent) {
-      if (!buttonElement) {
-        return;
-      }
+      if (!buttonElement) return;
       const rect = buttonElement.getBoundingClientRect();
-      const rectY = rect.y;
-      const bottomX = rect.x;
-      const topX = bottomX + rect.width;
-
-      if (Math.abs(clientY - rectY) < 20) {
-        if (bottomX < clientX && clientX < topX) {
-          setVisible(true);
-          return;
-        }
+      if (Math.abs(clientY - rect.y) < 20 && clientX > rect.x && clientX < rect.x + rect.width) {
+        setVisible(true);
+        return;
       }
       setVisible(false);
     }
     window.addEventListener('mousemove', listener);
-    return () => {
-      window.removeEventListener('mousemove', listener);
-    };
-  }, [buttonElement, setVisible]);
+    return () => window.removeEventListener('mousemove', listener);
+  }, [buttonElement]);
 
   return (
     <Fade in={visible}>

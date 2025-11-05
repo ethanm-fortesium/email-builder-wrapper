@@ -3,38 +3,16 @@ import React from 'react';
 import { useCurrentBlockId } from '../../editor/EditorBlock.js';
 import { setDocument, setSelectedBlockId, useDocument } from '../../editor/EditorContext.js';
 import EditorChildrenIds from '../helpers/EditorChildrenIds/index.js';
+import { clampCanvasWidth, getFontFamily } from './emailLayoutShared.js';
 
 import { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
-
-function getFontFamily(fontFamily: EmailLayoutProps['fontFamily']) {
-  const f = fontFamily ?? 'MODERN_SANS';
-  switch (f) {
-    case 'MODERN_SANS':
-      return '"Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif';
-    case 'BOOK_SANS':
-      return 'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif';
-    case 'ORGANIC_SANS':
-      return 'Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans", source-sans-pro, sans-serif';
-    case 'GEOMETRIC_SANS':
-      return 'Avenir, "Avenir Next LT Pro", Montserrat, Corbel, "URW Gothic", source-sans-pro, sans-serif';
-    case 'HEAVY_SANS':
-      return 'Bahnschrift, "DIN Alternate", "Franklin Gothic Medium", "Nimbus Sans Narrow", sans-serif-condensed, sans-serif';
-    case 'ROUNDED_SANS':
-      return 'ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri, source-sans-pro, sans-serif';
-    case 'MODERN_SERIF':
-      return 'Charter, "Bitstream Charter", "Sitka Text", Cambria, serif';
-    case 'BOOK_SERIF':
-      return '"Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, serif';
-    case 'MONOSPACE':
-      return '"Nimbus Mono PS", "Courier New", "Cutive Mono", monospace';
-  }
-}
 
 export default function EmailLayoutEditor(props: EmailLayoutProps) {
   const childrenIds = props.childrenIds ?? [];
   const document = useDocument();
   const currentBlockId = useCurrentBlockId();
   const radius = props.borderRadius ?? 0;
+  const effectiveCanvasWidth = clampCanvasWidth(props.canvasWidth);
 
   return (
     <div
@@ -54,7 +32,7 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
         style={{
           '--canvas-radius': radius ? `${radius}px` : '0px',
           margin: '0 auto',
-          maxWidth: '600px',
+          maxWidth: `${effectiveCanvasWidth}px`,
           backgroundColor: props.canvasColor ?? '#FFFFFF',
           border: props.borderColor ? `1px solid ${props.borderColor}` : undefined,
           borderRadius: radius || undefined,

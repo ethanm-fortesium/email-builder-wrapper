@@ -3,12 +3,12 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { renderToStaticMarkup } from '@usewaypoint/email-builder';
 
 // Import existing App + theme 
 import App from './App/index.js';
 import theme from './theme.js';
 import { useDocument, resetDocument } from './documents/editor/EditorContext.js';
+import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 
 // Internal React component that hooks into the document store and dispatches events
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {
@@ -144,7 +144,7 @@ class EmailBuilderEditor extends HTMLElement {
     }
 
     // Short-circuit if identical to last imported to avoid infinite feedback loops
-    // if (this._lastImportedHtml === htmlContent) return;
+    if (this._lastImportedHtml === htmlContent) return;
     this._lastImportedHtml = htmlContent;
     this._lastImportedConfigHash = null; // Clear config hash when importing HTML
 

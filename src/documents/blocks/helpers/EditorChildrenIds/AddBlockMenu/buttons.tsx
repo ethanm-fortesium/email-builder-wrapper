@@ -11,9 +11,13 @@ import {
   NotesOutlined,
   SmartButtonOutlined,
   ViewColumnOutlined,
+  ContactMailOutlined,
 } from '@mui/icons-material';
 
-import { TEditorBlock } from '../../../../editor/core';
+import { TEditorBlock } from '../../../../editor/core.js';
+
+import sampleImage from '../../../../../assets/600x400.svg';
+import sampleAvatar from '../../../../../assets/180x180.svg';
 
 type TButtonProps = {
   label: string;
@@ -70,7 +74,7 @@ export const BUTTONS: TButtonProps[] = [
       type: 'Image',
       data: {
         props: {
-          url: 'https://placehold.co/600x400?text=Image',
+          url: sampleImage,
           alt: 'Sample image',
           contentAlignment: 'middle',
           linkHref: null,
@@ -86,7 +90,7 @@ export const BUTTONS: TButtonProps[] = [
       type: 'Avatar',
       data: {
         props: {
-          imageUrl: 'https://placehold.co/128x128?text=Image',
+          imageUrl: sampleAvatar,
           shape: 'circle',
         },
         style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },

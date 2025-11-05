@@ -5,7 +5,7 @@ import { Stack, useTheme } from '@mui/material';
 import { useInspectorDrawerOpen } from '../documents/editor/EditorContext';
 
 import InspectorDrawer, { INSPECTOR_DRAWER_WIDTH } from './InspectorDrawer';
-import TemplatePanel from './TemplatePanel';
+import TemplatePanel from './TemplatePanel/index.js';
 
 function useDrawerTransition(cssProperty: 'margin-left' | 'margin-right', open: boolean) {
   const { transitions } = useTheme();

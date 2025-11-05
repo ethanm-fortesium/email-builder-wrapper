@@ -29,6 +29,13 @@ const EmailLayoutPropsSchema = z.object({
   textColor: COLOR_SCHEMA,
   fontFamily: FONT_FAMILY_SCHEMA,
   childrenIds: z.array(z.string()).optional().nullable(),
+  canvasWidth: z
+    .number()
+    .int()
+    .min(480)
+    .max(900)
+    .optional()
+    .nullable(),
 });
 
 export default EmailLayoutPropsSchema;

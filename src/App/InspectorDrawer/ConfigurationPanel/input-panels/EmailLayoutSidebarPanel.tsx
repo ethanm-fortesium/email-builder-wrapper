@@ -11,6 +11,8 @@ import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import ColorInput, { NullableColorInput } from './helpers/inputs/ColorInput/index.js';
 import { NullableFontFamily } from './helpers/inputs/FontFamily.js';
 import SliderInput from './helpers/inputs/SliderInput.js';
+import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
+import { ToggleButton } from '@mui/material';
 
 type EmailLayoutSidebarFieldsProps = {
   data: EmailLayoutProps;
@@ -57,9 +59,20 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         defaultValue={data.borderRadius ?? 0}
         onChange={(borderRadius) => updateData({ ...data, borderRadius })}
       />
+      <RadioGroupInput
+        label="Canvas width"
+        defaultValue={String(data.canvasWidth ?? 600)}
+        onChange={(v) => {
+          const canvasWidth = parseInt(v, 10);
+          updateData({ ...data, canvasWidth });
+        }}
+      >
+        <ToggleButton value="600">Standard (600px)</ToggleButton>
+        <ToggleButton value="900">Wide (900px)</ToggleButton>
+      </RadioGroupInput>
       <NullableFontFamily
         label="Font family"
-        defaultValue="MODERN_SANS"
+        defaultValue={data.fontFamily ?? "MODERN_SANS"}
         onChange={(fontFamily) => updateData({ ...data, fontFamily })}
       />
       <ColorInput
@@ -67,6 +80,7 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         defaultValue={data.textColor ?? '#262626'}
         onChange={(textColor) => updateData({ ...data, textColor })}
       />
+      
     </BaseSidebarPanel>
   );
 }

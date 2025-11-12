@@ -39,6 +39,9 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
       });
       if (!res.ok) throw new Error('Upload failed');
       const json = await res.json();
+      if (!json.payload || !Array.isArray(json.payload) || json.payload.length === 0) {
+        throw new Error('Invalid upload response');
+      }
       const url = apiBaseUrl + json.payload[0].url + '?download=false';
       updateData({ ...data, props: { ...props, logoUrl: url } });
     } catch (e) {
@@ -132,7 +135,7 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
     <TextInput label="Email" defaultValue={props.email || ''} onChange={(v: string) => setProp('email', sanitizeNullable(v))} />
     <TextInput label="Phone" defaultValue={props.phone || ''} onChange={(v: string) => setProp('phone', sanitizeNullable(v))} />
     <TextInput label="Website" defaultValue={props.website || ''} onChange={(v: string) => setProp('website', sanitizeNullable(v))} />
-    <TextInput label="Address" rows={3} defaultValue={(props as any).address || ''} onChange={(v: string) => setProp('address', sanitizeNullable(v))} />
+    <TextInput label="Address" rows={3} defaultValue={props.address || ''} onChange={(v: string) => setProp('address', sanitizeNullable(v))} />
     <TextInput label="Disclaimer HTML" rows={3} defaultValue={props.disclaimerHtml || ''} onChange={(v: string) => setProp('disclaimerHtml', sanitizeNullable(v))} />
     <TextInput label="LinkedIn URL" defaultValue={props.social?.linkedIn || ''} onChange={(v: string) => setSocial('linkedIn', v)} />
     <TextInput label="Facebook URL" defaultValue={props.social?.facebook || ''} onChange={(v: string) => setSocial('facebook', v)} />

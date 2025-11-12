@@ -73,7 +73,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   const wrapIcon = (href: string | null | undefined, iconSrc: string, alt: string) => {
     if (!href) return null;
     return (
-      <a key={alt} href={href} style={{ display: 'inline-block', marginRight: 3 }}>
+      <a key={alt} href={href} style={{ display: 'inline-block', marginRight: 8 }}>
         <img src={iconSrc} alt={alt} style={iconStyle} />
       </a>
     );
@@ -82,9 +82,6 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   if (social?.facebook) socialParts.push(wrapIcon(social.facebook, facebookIcon, 'Facebook'));
   if (social?.twitter) socialParts.push(wrapIcon(social.twitter, twitterIcon, 'Twitter'));
   if (social?.instagram) socialParts.push(wrapIcon(social.instagram, instagramIcon, 'Instagram'));
-
-  // for icon list we just render sequential anchors without separators 
-  const joinIcons = (parts: Array<React.ReactNode>) => parts.map((p) => p);
 
   const hasAnyContact = headerLines.length > 0 || otherLines.length > 0;
   const isEmpty = !logoUrl && !hasAnyContact && socialParts.length === 0 && !disclaimerHtml;
@@ -126,7 +123,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
         </div>
       )}
       {socialParts.length > 0 && (
-        <div style={{ marginTop: 10 }}>{joinIcons(socialParts)}</div>
+        <div style={{ marginTop: 10 }}>{socialParts}</div>
       )}
       {disclaimerHtml && (
         <div style={{ fontSize: '10px', opacity: 0.6, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: disclaimerHtml }} />

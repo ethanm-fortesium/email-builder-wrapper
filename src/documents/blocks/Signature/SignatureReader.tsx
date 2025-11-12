@@ -6,8 +6,9 @@ import { useCurrentBlockId } from '../../editor/EditorBlock.js';
 
 export default function SignatureReader({ style, props }: SignatureProps) {
   const blockId = useCurrentBlockId();
+  const safeStyle = style ?? {};
   return (
-    <ReaderBlockWrapper style={style as any} blockId={blockId}>
+    <ReaderBlockWrapper style={safeStyle} blockId={blockId}>
       <SignatureEditor style={style} props={props} />
     </ReaderBlockWrapper>
   );

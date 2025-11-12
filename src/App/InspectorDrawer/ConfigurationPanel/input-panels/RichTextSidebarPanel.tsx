@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import 'quill/dist/quill.snow.css';
 import { ZodError } from 'zod';
+import DOMPurify from 'dompurify';
 import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 import RichTextPropsSchema, { RichTextProps } from '../../../../documents/blocks/RichText/RichTextPropsSchema.js';
@@ -19,15 +20,7 @@ import {
 } from '@mui/icons-material';
 import Picker from './helpers/inputs/ColorInput/Picker.js';
 
-function sanitize(html: string): string {
-    return html
-        .replace(/<\s*script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<\s*style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/\son[a-zA-Z]+="[^"]*"/g, '')
-        .replace(/\son[a-zA-Z]+='[^']*'/g, '')
-        .replace(/href\s*=\s*"javascript:[^"]*"/gi, 'href="#"')
-        .replace(/href\s*=\s*'javascript:[^']*'/gi, "href='#'");
-}
+const sanitizeHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
 export default function RichTextSidebarPanel({ data, setData }: Props) {
@@ -119,7 +112,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
             quill.setContents(delta);
             applyBlockStyles(quill, latestDataRef.current?.style || {});
             quill.on('text-change', () => {
-                const html = sanitize(quill.root.innerHTML);
+                const html = sanitizeHtml(quill.root.innerHTML);
                 const latest = latestDataRef.current || {};
                 updateData({ ...latest, props: { ...(latest.props || {}), html } });
             });

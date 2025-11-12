@@ -18,7 +18,7 @@ Each block object: `{ type: BlockType, data: { props?, style?, childrenIds? } }`
 3. Wrap editor component with `EditorBlockWrapper` for selection, tune menu, preview suppression.
 4. If block manages children, store child ids in `data.childrenIds` and rely on `EditorChildrenIds` helper.
 
-## Safe State MutationsS
+## Safe State Mutations
 - Prefer `setDocument(partial)` for incremental edits; use `resetDocument(fullConfig)` only for wholesale imports.
 - Always maintain referential integrity: child ids listed in parent must exist as keys.
 - When importing HTML via `setHtml()`, system creates a single `Html` block; do not manually mix raw HTML and structured blocks without clear separation.

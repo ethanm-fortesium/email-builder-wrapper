@@ -1,8 +1,8 @@
 import React from 'react';
 import { RichTextProps } from './RichTextPropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
+import DOMPurify from 'dompurify';
 
-// Viewer-only component: editing now occurs in sidebar RichText panel using Quill.
 export default function RichTextEditor({ style, props }: RichTextProps) {
   const wrapperStyle: React.CSSProperties = {};
   if (style) {
@@ -12,7 +12,7 @@ export default function RichTextEditor({ style, props }: RichTextProps) {
       const resolved = FONT_FAMILIES.find((f) => f.key === style.fontFamily)?.value;
       wrapperStyle.fontFamily = resolved || style.fontFamily;
     }
-    if (style.fontSize) wrapperStyle.fontSize = style.fontSize as number;
+    if (style.fontSize) wrapperStyle.fontSize = `${style.fontSize}px`;
     if (style.fontWeight) wrapperStyle.fontWeight = style.fontWeight as any;
     if (style.textAlign) wrapperStyle.textAlign = style.textAlign as any;
     if (style.padding) {
@@ -21,5 +21,6 @@ export default function RichTextEditor({ style, props }: RichTextProps) {
     }
   }
   const html = props?.html || props?.initial || '<p><em>Empty rich text block</em></p>';
-  return <div style={wrapperStyle} dangerouslySetInnerHTML={{ __html: html }} />;
+  const sanitisedHtml = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+  return <div style={wrapperStyle} dangerouslySetInnerHTML={{ __html: sanitisedHtml }} />;
 }

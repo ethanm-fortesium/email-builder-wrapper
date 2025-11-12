@@ -78,7 +78,7 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
   };
 
   const removeLogo = () => {
-    const { logoUrl, logoWidth, ...rest } = props as any;
+    const { logoUrl: _logoUrl, logoWidth: _logoWidth, ...rest } = props as any;
     updateData({
       ...data,
       props: {
@@ -138,7 +138,7 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
     <TextInput label="Facebook URL" defaultValue={props.social?.facebook || ''} onChange={(v: string) => setSocial('facebook', v)} />
     <TextInput label="Twitter URL" defaultValue={props.social?.twitter || ''} onChange={(v: string) => setSocial('twitter', v)} />
     <TextInput label="Instagram URL" defaultValue={props.social?.instagram || ''} onChange={(v: string) => setSocial('instagram', v)} />
-    <MultiStylePropertyPanel names={['color', 'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'padding']} value={style} onChange={(style: any) => updateData({ ...data, style })} />
+    <MultiStylePropertyPanel names={['color', 'backgroundColor', 'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'padding']} value={style} onChange={(style: any) => updateData({ ...data, style })} />
     </BaseSidebarPanel>
   );
 }

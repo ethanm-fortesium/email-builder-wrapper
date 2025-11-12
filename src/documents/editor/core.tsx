@@ -24,6 +24,8 @@ import EmailLayoutPropsSchema from '../blocks/EmailLayout/EmailLayoutPropsSchema
 import EditorBlockWrapper from '../blocks/helpers/block-wrappers/EditorBlockWrapper.js';
 import SignatureEditor from '../blocks/Signature/SignatureEditor.js';
 import SignaturePropsSchema from '../blocks/Signature/SignaturePropsSchema.js';
+import RichTextEditor from '../blocks/RichText/RichTextEditor.js';
+import RichTextPropsSchema from '../blocks/RichText/RichTextPropsSchema.js';
 
 const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
   Avatar: {
@@ -124,6 +126,14 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
     Component: (props) => (
       <EditorBlockWrapper>
         <SignatureEditor {...props} />
+      </EditorBlockWrapper>
+    ),
+  },
+  RichText: {
+    schema: RichTextPropsSchema,
+    Component: (props) => (
+      <EditorBlockWrapper>
+        <RichTextEditor {...props} />
       </EditorBlockWrapper>
     ),
   },

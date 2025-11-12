@@ -22,6 +22,7 @@ const StyleSchema = z
       .optional()
       .nullable(),
     color: z.string().optional().nullable(),
+    backgroundColor: z.string().optional().nullable(),
     fontFamily: z.string().optional().nullable(),
     fontSize: z.number().int().min(8).max(32).optional().nullable(),
     fontWeight: z.union([z.string(), z.number()]).optional().nullable(),

@@ -4,8 +4,8 @@ import { ZodError } from 'zod';
 import { HeightOutlined } from '@mui/icons-material';
 import { SpacerProps, SpacerPropsDefaults, SpacerPropsSchema } from '@usewaypoint/block-spacer';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import SliderInput from './helpers/inputs/SliderInput';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import SliderInput from './helpers/inputs/SliderInput.js';
 
 type SpacerSidebarPanelProps = {
   data: SpacerProps;

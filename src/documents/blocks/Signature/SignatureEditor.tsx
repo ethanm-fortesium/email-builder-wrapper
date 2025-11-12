@@ -24,6 +24,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   let contentFontSize: number | undefined = undefined;
   if (style) {
     if (style.color) wrapperStyle.color = style.color as string;
+    if (style.backgroundColor) wrapperStyle.backgroundColor = style.backgroundColor as string;
     if (style.fontFamily) {
       const resolved = FONT_FAMILIES.find((f) => f.key === style.fontFamily)?.value;
       wrapperStyle.fontFamily = resolved || style.fontFamily;

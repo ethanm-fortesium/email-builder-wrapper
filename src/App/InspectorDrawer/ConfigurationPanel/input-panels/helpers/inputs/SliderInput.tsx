@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { InputLabel, Stack } from '@mui/material';
 
-import RawSliderInput from './raw/RawSliderInput';
+import RawSliderInput from './raw/RawSliderInput.js';
 
 type SliderInputProps = {
   label: string;

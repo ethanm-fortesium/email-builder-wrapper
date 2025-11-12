@@ -2,14 +2,14 @@ import React from 'react';
 
 import { RoundedCornerOutlined } from '@mui/icons-material';
 
-import { TStyle } from '../../../../../../documents/blocks/helpers/TStyle';
-import { NullableColorInput } from '../inputs/ColorInput';
-import { NullableFontFamily } from '../inputs/FontFamily';
-import FontSizeInput from '../inputs/FontSizeInput';
-import FontWeightInput from '../inputs/FontWeightInput';
-import PaddingInput from '../inputs/PaddingInput';
-import SliderInput from '../inputs/SliderInput';
-import TextAlignInput from '../inputs/TextAlignInput';
+import { TStyle } from '../../../../../../documents/blocks/helpers/TStyle.js';
+import { NullableColorInput } from '../inputs/ColorInput/index.js';
+import { NullableFontFamily } from '../inputs/FontFamily.js';
+import FontSizeInput from '../inputs/FontSizeInput.js';
+import FontWeightInput from '../inputs/FontWeightInput.js';
+import PaddingInput from '../inputs/PaddingInput.js';
+import SliderInput from '../inputs/SliderInput.js';
+import TextAlignInput from '../inputs/TextAlignInput.js';
 
 type StylePropertyPanelProps = {
   name: keyof TStyle;
@@ -18,7 +18,6 @@ type StylePropertyPanelProps = {
 };
 export default function SingleStylePropertyPanel({ name, value, onChange }: StylePropertyPanelProps) {
   const defaultValue = value[name] ?? null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (v: any) => {
     onChange({ ...value, [name]: v });
   };

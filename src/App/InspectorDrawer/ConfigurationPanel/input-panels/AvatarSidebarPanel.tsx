@@ -31,7 +31,6 @@ export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: Avatar
   };
 
   const size = data.props?.size ?? AvatarPropsDefaults.size;
-  const imageUrl = data.props?.imageUrl ?? AvatarPropsDefaults.imageUrl;
   const alt = data.props?.alt ?? AvatarPropsDefaults.alt;
   const shape = data.props?.shape ?? AvatarPropsDefaults.shape;
   

@@ -12,6 +12,7 @@ import {
   SmartButtonOutlined,
   ViewColumnOutlined,
   ContactMailOutlined,
+  WysiwygOutlined,
 } from '@mui/icons-material';
 
 import { TEditorBlock } from '../../../../editor/core.js';
@@ -150,16 +151,6 @@ export const BUTTONS: TButtonProps[] = [
     }),
   },
   {
-    label: 'Container',
-    icon: <LibraryAddOutlined />,
-    block: () => ({
-      type: 'Container',
-      data: {
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
     label: 'Signature',
     icon: <ContactMailOutlined />,
     block: () => ({
@@ -176,6 +167,17 @@ export const BUTTONS: TButtonProps[] = [
           social: { linkedIn: 'https://linkedin.com/company/fortesium', twitter: 'https://x.com/FortesiumUK' },
           logoUrl: fortesiumLogo,
         },
+      },
+    }),
+  },
+  {
+    label: 'Rich Text',
+    icon: <WysiwygOutlined />,
+    block: () => ({
+      type: 'RichText',
+      data: {
+        props: { html: '<p>This is a <strong>rich text</strong> block. You can edit <em>font styles</em>, <u>links</u>, and more!</p>' },
+        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 }, fontSize: 14, fontFamily: 'MODERN_SANS' },
       },
     }),
   },

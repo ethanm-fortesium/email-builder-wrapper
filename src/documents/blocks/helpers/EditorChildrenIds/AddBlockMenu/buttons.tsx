@@ -18,6 +18,7 @@ import { TEditorBlock } from '../../../../editor/core.js';
 
 import sampleImage from '../../../../../assets/600x400.svg';
 import sampleAvatar from '../../../../../assets/180x180.svg';
+import fortesiumLogo from '../../../../../assets/fortesiumlogo.png';
 
 type TButtonProps = {
   label: string;
@@ -158,7 +159,24 @@ export const BUTTONS: TButtonProps[] = [
       },
     }),
   },
-
-  // { label: 'ProgressBar', icon: <ProgressBarOutlined />, block: () => ({}) },
-  // { label: 'LoopContainer', icon: <ViewListOutlined />, block: () => ({}) },
+  {
+    label: 'Signature',
+    icon: <ContactMailOutlined />,
+    block: () => ({
+      type: 'Signature',
+      data: {
+        style: { padding: { top: 16, bottom: 24, left: 24, right: 24 }, fontSize: 14, fontFamily: 'MODERN_SANS', fontWeight: 400 },
+        props: {
+          fullName: 'Jane Doe',
+          title: 'Account Executive',
+          company: 'Fortesium Ltd',
+          email: 'info@fortesium.co.uk',
+          website: 'https://www.fortesium.co.uk',
+          phone: '(020) 3397 3712',
+          social: { linkedIn: 'https://linkedin.com/company/fortesium', twitter: 'https://x.com/FortesiumUK' },
+          logoUrl: fortesiumLogo,
+        },
+      },
+    }),
+  },
 ];

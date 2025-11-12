@@ -7,7 +7,14 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 // Import existing App + theme 
 import App from './App/index.js';
 import theme from './theme.js';
-import { useDocument, resetDocument } from './documents/editor/EditorContext.js';
+import {
+  useDocument,
+  resetDocument,
+  setReadOnly,
+  getEditorState,
+  setSelectedMainTab,
+  setInspectorDrawerOpen,
+} from './documents/editor/EditorContext.js';
 import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 
 // Internal React component that hooks into the document store and dispatches events
@@ -60,6 +67,9 @@ class EmailBuilderEditor extends HTMLElement {
   private _lastImportedHtml: string | null = null; // Last HTML string passed in via setHtml/importHtml to avoid loops
   private _lastImportedConfigHash: string | null = null; // Dedupe for configuration imports
   private _pendingConfig: any = null; // Pending configuration before mount
+  private _readOnlySnapshot: { selectedMainTab: ReturnType<typeof getEditorState>['selectedMainTab']; inspectorDrawerOpen: boolean } | null = null;
+  private _attributeSync = false;
+  private _readOnlyMode = false;
 
   // Called by React side to update cached values
   public __setLatest(document: any, html: string) {
@@ -68,6 +78,24 @@ class EmailBuilderEditor extends HTMLElement {
   }
   // Internal accessor used by React effect for event origin determination
   public __isProgrammatic() { return this._isProgrammaticImport; }
+
+  static get observedAttributes() {
+    return ['readonly'];
+  }
+
+  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
+    if (name === 'readonly' && !this._attributeSync) {
+      this.__applyReadOnly(newValue !== null);
+    }
+  }
+
+  get readOnly() {
+    return this._readOnlyMode;
+  }
+
+  set readOnly(value: boolean) {
+    this.setReadOnlyMode(value);
+  }
 
   connectedCallback() {
     if (this._root) return; // Already mounted
@@ -85,6 +113,10 @@ class EmailBuilderEditor extends HTMLElement {
         </ThemeProvider>
       </React.StrictMode>
     );
+
+    if (this.hasAttribute('readonly')) {
+      this.__applyReadOnly(true);
+    }
 
     queueMicrotask(() => {
       if (!this._pendingConfig && !this._pendingHtml) {
@@ -117,6 +149,14 @@ class EmailBuilderEditor extends HTMLElement {
 
   public getDocument(): any {
     return this._latestDocument;
+  }
+
+  public setReadOnlyMode(readOnly: boolean) {
+    this.__applyReadOnly(readOnly);
+  }
+
+  public toggleReadOnlyMode() {
+    this.setReadOnlyMode(!this._readOnlyMode);
   }
 
   // Programmatically replace editor content with provided raw HTML
@@ -202,10 +242,10 @@ class EmailBuilderEditor extends HTMLElement {
         type: 'EmailLayout',
         data: {
           backdropColor: '#F5F5F5',
-            canvasColor: '#FFFFFF',
-            textColor: '#262626',
-            fontFamily: 'MODERN_SANS',
-            childrenIds: [htmlBlockId],
+          canvasColor: '#FFFFFF',
+          textColor: '#262626',
+          fontFamily: 'MODERN_SANS',
+          childrenIds: [htmlBlockId],
         },
       },
       [htmlBlockId]: {
@@ -258,6 +298,54 @@ class EmailBuilderEditor extends HTMLElement {
     if (!Array.isArray(root.data.childrenIds)) return false;
     if (root.data.childrenIds.some((id: string) => id && !obj[id])) return false;
     return true;
+  }
+
+  private __applyReadOnly(readOnly: boolean) {
+    if (readOnly) {
+      const state = getEditorState();
+      this._readOnlySnapshot = {
+        selectedMainTab: state.selectedMainTab,
+        inspectorDrawerOpen: state.inspectorDrawerOpen,
+      };
+      setReadOnly(true);
+      console.log('Restoring from read-only snapshot true', this._readOnlySnapshot);
+
+      setSelectedMainTab('preview');
+      setInspectorDrawerOpen(false);
+      this._readOnlyMode = true;
+      this._attributeSync = true;
+      if (!this.hasAttribute('readonly')) {
+        this.setAttribute('readonly', '');
+      }
+      this._attributeSync = false;
+      this.__dispatchModeChange('read-only');
+    } else {
+      const snapshot = this._readOnlySnapshot;
+      console.log('Restoring from read-only snapshot false', snapshot);
+      setReadOnly(false);
+      const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
+      const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
+      setSelectedMainTab(nextMainTab);
+      setInspectorDrawerOpen(nextInspector);
+      this._readOnlySnapshot = null;
+      this._readOnlyMode = false;
+      this._attributeSync = true;
+      if (this.hasAttribute('readonly')) {
+        this.removeAttribute('readonly');
+      }
+      this._attributeSync = false;
+      this.__dispatchModeChange('interactive');
+    }
+  }
+
+  private __dispatchModeChange(mode: 'read-only' | 'interactive') {
+    this.dispatchEvent(
+      new CustomEvent('emailBuilderModeChange', {
+        detail: { mode },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 

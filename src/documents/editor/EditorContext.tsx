@@ -13,6 +13,7 @@ type TValue = {
   selectedScreenSize: 'desktop' | 'mobile';
 
   inspectorDrawerOpen: boolean;
+  readOnly: boolean;
 };
 
 const editorStateStore = create<TValue>(() => ({
@@ -23,6 +24,7 @@ const editorStateStore = create<TValue>(() => ({
   selectedScreenSize: 'desktop',
 
   inspectorDrawerOpen: true,
+  readOnly: false,
 }));
 
 export function useDocument() {
@@ -42,6 +44,9 @@ export function useSelectedMainTab() {
 }
 
 export function setSelectedMainTab(selectedMainTab: TValue['selectedMainTab']) {
+  if (editorStateStore.getState().readOnly && selectedMainTab !== 'preview') {
+    return editorStateStore.setState({ selectedMainTab: 'preview' });
+  }
   return editorStateStore.setState({ selectedMainTab });
 }
 
@@ -53,7 +58,14 @@ export function useInspectorDrawerOpen() {
   return editorStateStore((s) => s.inspectorDrawerOpen);
 }
 
+export function useReadOnlyMode() {
+  return editorStateStore((s) => s.readOnly);
+}
+
 export function setSelectedBlockId(selectedBlockId: TValue['selectedBlockId']) {
+  if (editorStateStore.getState().readOnly) {
+    return editorStateStore.setState({ selectedBlockId: null, selectedSidebarTab: 'styles' });
+  }
   const selectedSidebarTab = selectedBlockId === null ? 'styles' : 'block-configuration';
   const options: Partial<TValue> = {};
   if (selectedBlockId !== null) {
@@ -67,6 +79,7 @@ export function setSelectedBlockId(selectedBlockId: TValue['selectedBlockId']) {
 }
 
 export function setSidebarTab(selectedSidebarTab: TValue['selectedSidebarTab']) {
+  if (editorStateStore.getState().readOnly) return;
   return editorStateStore.setState({ selectedSidebarTab });
 }
 
@@ -89,10 +102,36 @@ export function setDocument(document: TValue['document']) {
 }
 
 export function toggleInspectorDrawerOpen() {
+  if (editorStateStore.getState().readOnly) return;
   const inspectorDrawerOpen = !editorStateStore.getState().inspectorDrawerOpen;
   return editorStateStore.setState({ inspectorDrawerOpen });
 }
 
 export function setSelectedScreenSize(selectedScreenSize: TValue['selectedScreenSize']) {
   return editorStateStore.setState({ selectedScreenSize });
+}
+
+export function setInspectorDrawerOpen(inspectorDrawerOpen: boolean) {
+  if (editorStateStore.getState().readOnly && inspectorDrawerOpen) {
+    return editorStateStore.setState({ inspectorDrawerOpen: false });
+  }
+  return editorStateStore.setState({ inspectorDrawerOpen });
+}
+
+export function setReadOnly(readOnly: boolean) {
+  if (readOnly) {
+    editorStateStore.setState({
+      readOnly: true,
+      selectedMainTab: 'preview',
+      inspectorDrawerOpen: false,
+      selectedBlockId: null,
+      selectedSidebarTab: 'styles',
+    });
+  } else {
+    editorStateStore.setState({ readOnly: false });
+  }
+}
+
+export function getEditorState() {
+  return editorStateStore.getState();
 }

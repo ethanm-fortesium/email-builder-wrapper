@@ -151,6 +151,17 @@ export const BUTTONS: TButtonProps[] = [
     }),
   },
   {
+    label: 'Container',
+    icon: <LibraryAddOutlined />,
+    block: () => ({
+      type: 'Container',
+      data: {
+        props: {},
+        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
+      },
+    }),
+  },
+  {
     label: 'Signature',
     icon: <ContactMailOutlined />,
     block: () => ({

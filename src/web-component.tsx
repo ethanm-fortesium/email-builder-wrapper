@@ -303,6 +303,9 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   private __applyReadOnly(readOnly: boolean) {
+    if (this._readOnlyMode === readOnly) {
+      return;
+    }
     if (readOnly) {
       const state = getEditorState();
       this._readOnlySnapshot = {

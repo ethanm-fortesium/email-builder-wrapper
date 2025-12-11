@@ -6,6 +6,7 @@ import linkedinIcon from '../../../assets/social/linkedin.png';
 import facebookIcon from '../../../assets/social/facebook.png';
 import twitterIcon from '../../../assets/social/twitter.png';
 import instagramIcon from '../../../assets/social/instagram.png';
+import DOMPurify from 'dompurify';
 
 function InlineLink({ href, children }: { href?: string | null; children: React.ReactNode }) {
   if (!href) return <>{children}</>;
@@ -86,6 +87,10 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   const hasAnyContact = headerLines.length > 0 || otherLines.length > 0;
   const isEmpty = !logoUrl && !hasAnyContact && socialParts.length === 0 && !disclaimerHtml;
 
+  const sanitizedDisclaimer = disclaimerHtml 
+    ? DOMPurify.sanitize(disclaimerHtml, { USE_PROFILES: { html: true } })
+    : '';
+
   return (
     <div style={wrapperStyle}>
       {headerLines.length > 0 && (
@@ -96,7 +101,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
         </div>
       )}
       {logoUrl && (
-        <div style={{ marginBottom: otherLines.length > 0 ? 8 : 0 }}>
+        <div style={{ marginBottom: otherLines.length > 0 ? 10 : 0 }}>
           <img
             src={logoUrl}
             alt={company || 'Logo'}
@@ -126,7 +131,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
         <div style={{ marginTop: 10 }}>{socialParts}</div>
       )}
       {disclaimerHtml && (
-        <div style={{ fontSize: '10px', opacity: 0.6, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: disclaimerHtml }} />
+        <div style={{ fontSize: '10px', opacity: 0.6, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: sanitizedDisclaimer }} />
       )}
       {isEmpty && (
         <div style={{ fontSize: 11, fontStyle: 'italic', opacity: 0.5 }}>Signature (empty)</div>

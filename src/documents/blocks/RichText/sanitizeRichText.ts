@@ -2,10 +2,14 @@ import DOMPurify from 'dompurify';
 
 type SanitizeOptions = Parameters<typeof DOMPurify.sanitize>[1];
 
-const BASE_CONFIG = { USE_PROFILES: { html: true } } as SanitizeOptions;
+const BASE_CONFIG = {
+  USE_PROFILES: { html: true },
+  ADD_ATTR: ['style'],
+} as SanitizeOptions;
 const FRAGMENT_CONFIG = {
   USE_PROFILES: { html: true },
   RETURN_DOM_FRAGMENT: true,
+  ADD_ATTR: ['style'],
 } as SanitizeOptions;
 
 const appendStyle = (node: Element, style: string) => {

@@ -62,7 +62,6 @@ export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: Avatar
   const uploadedUrl = new URL(json.payload[0].url, uploadBase);
       uploadedUrl.searchParams.set('download', 'false');
       const imageUrl = uploadedUrl.toString();
-      console.log("apiBaseUrl: ", apiBaseUrl)
       updateData({ ...data, props: { ...data.props, imageUrl } });
     } catch (err) {
       console.error(err);

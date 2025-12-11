@@ -53,6 +53,20 @@ const applyLinkStyling = (root: ParentNode) => {
   });
 };
 
+const applyParagraphStyling = (root: ParentNode) => {
+  root.querySelectorAll?.('p').forEach((paragraph) => {
+    const element = paragraph as HTMLParagraphElement;
+    const textContent = element.textContent?.replace(/\u200B/g, '').trim();
+
+    if (!textContent && !element.querySelector('img, br')) {
+      element.remove();
+      return;
+    }
+
+    appendStyle(element, 'margin:0 0 12px;line-height:0.5');
+  });
+};
+
 export const sanitizeRichText = (html: string, options?: { decorateLinks?: boolean }): string => {
   if (!html) return '';
 
@@ -62,6 +76,7 @@ export const sanitizeRichText = (html: string, options?: { decorateLinks?: boole
 
   const fragment = DOMPurify.sanitize(html, FRAGMENT_CONFIG) as unknown as DocumentFragment;
 
+  applyParagraphStyling(fragment);
   applyListStyling(fragment);
   if (options?.decorateLinks) {
     applyLinkStyling(fragment);

@@ -3,10 +3,10 @@ import { ZodError } from 'zod';
 
 import { TextProps, TextPropsSchema } from '@usewaypoint/block-text';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import BooleanInput from './helpers/inputs/BooleanInput';
-import TextInput from './helpers/inputs/TextInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import BooleanInput from './helpers/inputs/BooleanInput.js';
+import TextInput from './helpers/inputs/TextInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type TextSidebarPanelProps = {
   data: TextProps;

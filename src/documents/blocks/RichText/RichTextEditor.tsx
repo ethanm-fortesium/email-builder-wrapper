@@ -1,7 +1,7 @@
 import React from 'react';
 import { RichTextProps } from './RichTextPropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
-import DOMPurify from 'dompurify';
+import { sanitizeRichText } from './sanitizeRichText.js';
 
 export default function RichTextEditor({ style, props }: RichTextProps) {
   const wrapperStyle: React.CSSProperties = {};
@@ -21,6 +21,6 @@ export default function RichTextEditor({ style, props }: RichTextProps) {
     }
   }
   const html = props?.html || props?.initial || '<p><em>Empty rich text block</em></p>';
-  const sanitisedHtml = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+  const sanitisedHtml = sanitizeRichText(html, { decorateLinks: true });
   return <div style={wrapperStyle} dangerouslySetInnerHTML={{ __html: sanitisedHtml }} />;
 }

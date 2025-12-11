@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import 'quill/dist/quill.snow.css';
 import { ZodError } from 'zod';
-import DOMPurify from 'dompurify';
 import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 import RichTextPropsSchema, { RichTextProps } from '../../../../documents/blocks/RichText/RichTextPropsSchema.js';
@@ -19,8 +18,7 @@ import {
     ColorLens,
 } from '@mui/icons-material';
 import Picker from './helpers/inputs/ColorInput/Picker.js';
-
-const sanitizeHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+import { sanitizeRichText } from '../../../../documents/blocks/RichText/sanitizeRichText.js';
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
 export default function RichTextSidebarPanel({ data, setData }: Props) {
@@ -112,7 +110,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
             quill.setContents(delta);
             applyBlockStyles(quill, latestDataRef.current?.style || {});
             quill.on('text-change', () => {
-                const html = sanitizeHtml(quill.root.innerHTML);
+                const html = sanitizeRichText(quill.root.innerHTML);
                 const latest = latestDataRef.current || {};
                 updateData({ ...latest, props: { ...(latest.props || {}), html } });
             });
@@ -257,9 +255,8 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                         size="small"
                         color={activeFormats.link ? 'primary' : 'default'}
                         onMouseDown={(e) => {
-                            // capture selection before focus shifts
                             const sel = editorRef.current?.getSelection();
-                            if (!sel || sel.length === 0) return; // need highlighted text
+                            if (!sel || sel.length === 0) return; 
                             const currentFormat = editorRef.current.getFormat(sel.index, sel.length);
                             const currentLink = currentFormat.link || '';
                             setLinkValue(currentLink);

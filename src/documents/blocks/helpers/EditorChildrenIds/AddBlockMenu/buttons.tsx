@@ -17,8 +17,8 @@ import {
 
 import { TEditorBlock } from '../../../../editor/core.js';
 
-import sampleImage from '../../../../../assets/600x400.svg';
-import sampleAvatar from '../../../../../assets/180x180.svg';
+import sampleImage from '../../../../../assets/512px.png';
+import sampleAvatar from '../../../../../assets/round-avatar.png';
 import fortesiumLogo from '../../../../../assets/fortesiumlogo.png';
 
 type TButtonProps = {

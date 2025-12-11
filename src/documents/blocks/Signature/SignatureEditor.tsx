@@ -2,10 +2,10 @@ import React from 'react';
 
 import { SignatureProps } from './SignaturePropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
-import linkedinIcon from '../../../assets/social/linkedin.svg';
-import facebookIcon from '../../../assets/social/facebook.svg';
-import twitterIcon from '../../../assets/social/twitter.svg';
-import instagramIcon from '../../../assets/social/instagram.svg';
+import linkedinIcon from '../../../assets/social/linkedin.png';
+import facebookIcon from '../../../assets/social/facebook.png';
+import twitterIcon from '../../../assets/social/twitter.png';
+import instagramIcon from '../../../assets/social/instagram.png';
 
 function InlineLink({ href, children }: { href?: string | null; children: React.ReactNode }) {
   if (!href) return <>{children}</>;

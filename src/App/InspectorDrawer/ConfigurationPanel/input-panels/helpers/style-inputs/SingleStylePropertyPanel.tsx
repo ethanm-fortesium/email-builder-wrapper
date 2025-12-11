@@ -24,9 +24,9 @@ export default function SingleStylePropertyPanel({ name, value, onChange }: Styl
 
   switch (name) {
     case 'backgroundColor':
-      return <NullableColorInput label="Background color" defaultValue={defaultValue} onChange={handleChange} />;
+      return <NullableColorInput label="Background colour" defaultValue={defaultValue} onChange={handleChange} />;
     case 'borderColor':
-      return <NullableColorInput label="Border color" defaultValue={defaultValue} onChange={handleChange} />;
+      return <NullableColorInput label="Border colour" defaultValue={defaultValue} onChange={handleChange} />;
     case 'borderRadius':
       return (
         <SliderInput
@@ -42,7 +42,7 @@ export default function SingleStylePropertyPanel({ name, value, onChange }: Styl
         />
       );
     case 'color':
-      return <NullableColorInput label="Text color" defaultValue={defaultValue} onChange={handleChange} />;
+      return <NullableColorInput label="Text colour" defaultValue={defaultValue} onChange={handleChange} />;
     case 'fontFamily':
       return <NullableFontFamily label="Font family" defaultValue={defaultValue} onChange={handleChange} />;
     case 'fontSize':

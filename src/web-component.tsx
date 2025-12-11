@@ -7,6 +7,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 // Import existing App + theme 
 import App from './App/index.js';
 import theme from './theme.js';
+import { resolveApiBaseUrl } from './utils/resolveApiBaseUrl.js';
 import {
   useDocument,
   resetDocument,
@@ -21,6 +22,7 @@ import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {
   const document = useDocument();
   const latestDocRef = useRef<any>(document);
+  const safeApiBaseUrl = useMemo(() => resolveApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
 
   // Compute HTML whenever document changes
   const html = useMemo(() => renderToStaticMarkup(document, { rootBlockId: 'root' }), [document]);
@@ -52,7 +54,7 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
   return (
     <>
       <CssBaseline />
-      <App apiBaseUrl={apiBaseUrl} />
+      <App apiBaseUrl={safeApiBaseUrl} />
     </>
   );
 }
@@ -308,8 +310,6 @@ class EmailBuilderEditor extends HTMLElement {
         inspectorDrawerOpen: state.inspectorDrawerOpen,
       };
       setReadOnly(true);
-      console.log('Restoring from read-only snapshot true', this._readOnlySnapshot);
-
       setSelectedMainTab('preview');
       setInspectorDrawerOpen(false);
       this._readOnlyMode = true;
@@ -321,7 +321,6 @@ class EmailBuilderEditor extends HTMLElement {
       this.__dispatchModeChange('read-only');
     } else {
       const snapshot = this._readOnlySnapshot;
-      console.log('Restoring from read-only snapshot false', snapshot);
       setReadOnly(false);
       const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
       const nextInspector = snapshot?.inspectorDrawerOpen ?? true;

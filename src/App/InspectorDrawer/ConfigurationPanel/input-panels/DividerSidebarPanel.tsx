@@ -31,7 +31,7 @@ export default function DividerSidebarPanel({ data, setData }: DividerSidebarPan
   return (
     <BaseSidebarPanel title="Divider block">
       <ColorInput
-        label="Color"
+        label="Colour"
         defaultValue={lineColor}
         onChange={(lineColor) => updateData({ ...data, props: { ...data.props, lineColor } })}
       />

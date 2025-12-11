@@ -6,6 +6,7 @@ import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPa
 import SliderInput from './helpers/inputs/SliderInput.js';
 import { AspectRatioOutlined } from '@mui/icons-material';
 import SignaturePropsSchema, { SignatureProps } from '../../../../documents/blocks/Signature/SignaturePropsSchema.js';
+import { resolveApiBaseUrl } from '../../../../utils/resolveApiBaseUrl.js';
 
 type Props = { data: SignatureProps; setData: (v: SignatureProps) => void; apiBaseUrl: string };
 export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Props) {
@@ -33,7 +34,10 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
     formData.append('AccessControl', 'Public');
     formData.append('file', file);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/Documents/Upload?location=tempfiles`, {
+      const uploadBase = resolveApiBaseUrl(apiBaseUrl) || window.location.origin;
+      const uploadUrl = new URL('/api/Documents/Upload?location=tempfiles', uploadBase);
+
+      const res = await fetch(uploadUrl.toString(), {
         method: 'POST',
         body: formData
       });
@@ -42,7 +46,9 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
       if (!json.payload || !Array.isArray(json.payload) || json.payload.length === 0) {
         throw new Error('Invalid upload response');
       }
-      const url = apiBaseUrl + json.payload[0].url + '?download=false';
+      const uploadedUrl = new URL(json.payload[0].url, uploadBase);
+      uploadedUrl.searchParams.set('download', 'false');
+      const url = uploadedUrl.toString();
       updateData({ ...data, props: { ...props, logoUrl: url } });
     } catch (e) {
       console.error(e);

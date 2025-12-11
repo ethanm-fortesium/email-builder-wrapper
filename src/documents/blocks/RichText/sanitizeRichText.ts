@@ -63,7 +63,7 @@ const applyParagraphStyling = (root: ParentNode) => {
       return;
     }
 
-    appendStyle(element, 'margin:0 0 12px;line-height:0.5');
+    appendStyle(element, 'margin:0 0 12px;line-height:1.0');
   });
 };
 

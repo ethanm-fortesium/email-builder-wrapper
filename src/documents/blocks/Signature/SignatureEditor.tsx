@@ -7,6 +7,13 @@ import facebookIcon from '../../../assets/social/facebook.png';
 import twitterIcon from '../../../assets/social/twitter.png';
 import instagramIcon from '../../../assets/social/instagram.png';
 
+/**
+ * Renders its children as a link when a URL is provided, otherwise renders the children unchanged.
+ *
+ * @param href - The destination URL to link to; if falsy, no anchor is rendered.
+ * @param children - The content to render inside the link or directly when no `href` is given.
+ * @returns An anchor element wrapping `children` when `href` is provided, otherwise the `children` node itself.
+ */
 function InlineLink({ href, children }: { href?: string | null; children: React.ReactNode }) {
   if (!href) return <>{children}</>;
   return (
@@ -16,6 +23,15 @@ function InlineLink({ href, children }: { href?: string | null; children: React.
   );
 }
 
+/**
+ * Renders a formatted email signature from provided signature data and optional style overrides.
+ *
+ * Renders name, title, company, contact lines (email, phone, website, address), optional logo, social icons, and an optional disclaimer. If no content is provided, renders a small "Signature (empty)" placeholder.
+ *
+ * @param style - Optional visual overrides (color, backgroundColor, fontFamily, fontSize applied to main content, fontWeight, textAlign, padding).
+ * @param props - Signature data (may include `fullName`, `title`, `company`, `email`, `phone`, `address`, `website`, `logoUrl`, `logoWidth`, `social`, `disclaimerHtml`).
+ * @returns A React element representing the composed signature block.
+ */
 export default function SignatureEditor({ style, props }: SignatureProps) {
   const { fullName, title, company, email, phone, address, website, logoUrl, logoWidth, social, disclaimerHtml } = props || {};
 

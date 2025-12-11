@@ -21,6 +21,16 @@ import Picker from './helpers/inputs/ColorInput/Picker.js';
 import { sanitizeRichText } from '../../../../documents/blocks/RichText/sanitizeRichText.js';
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
+/**
+ * Sidebar panel that provides a WYSIWYG editor and controls for configuring a rich-text block.
+ *
+ * This component mounts a Quill-based editor, exposes formatting and link tools, synchronizes editor HTML
+ * with the provided `data` (validating with RichTextPropsSchema), and allows editing of block-level styles.
+ *
+ * @param data - Current rich-text block data and style settings
+ * @param setData - Callback invoked with updated rich-text block data after validation
+ * @returns The sidebar panel element containing the editor, toolbar, validation messages, and style panel
+ */
 export default function RichTextSidebarPanel({ data, setData }: Props) {
     const [errors, setErrors] = useState<ZodError | null>(null);
     const editorRef = useRef<any>(null);

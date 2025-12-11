@@ -18,7 +18,15 @@ import {
 } from './documents/editor/EditorContext.js';
 import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 
-// Internal React component that hooks into the document store and dispatches events
+/**
+ * Root React component that connects the editor document store to the host element and renders the email builder App.
+ *
+ * This component listens to the document store, derives static HTML from the current document, and informs the host element of updates. On each document change it updates the host's cached latest document/html and dispatches an `emailContentChange` event whose detail includes `html`, `document`, and `origin` (`"programmatic"` or `"user"`). When the component first mounts it dispatches an `emailBuilderReady` event.
+ *
+ * @param host - The hosting custom element instance that receives latest document/html updates and will receive dispatched events.
+ * @param apiBaseUrl - The API base URL (will be resolved before being passed to the App).
+ * @returns The React element tree for the email builder application.
+ */
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {
   const document = useDocument();
   const latestDocRef = useRef<any>(document);

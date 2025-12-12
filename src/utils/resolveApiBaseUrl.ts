@@ -23,7 +23,20 @@ export const resolveApiBaseUrl = (rawValue: string | null | undefined): string =
       return fallbackOrigin;
     }
 
-    return candidate.origin;
+  const trimmedInput = typeof rawValue === 'string' ? rawValue.trim() : '';
+  const pathPortion = trimmedInput.split(/[?#]/)[0] ?? '';
+  const hasExplicitTrailingSlash = pathPortion.endsWith('/') && pathPortion.length > 0;
+    let pathname = candidate.pathname;
+
+    if (!hasExplicitTrailingSlash) {
+      if (pathname === '/') {
+        pathname = '';
+      } else if (pathname.endsWith('/')) {
+        pathname = pathname.slice(0, -1);
+      }
+    }
+
+    return `${candidate.origin}${pathname}`;
   } catch (error) {
     console.warn('EmailBuilderEditor: invalid apiBaseUrl provided. Falling back to window origin.', error);
     return fallbackOrigin;

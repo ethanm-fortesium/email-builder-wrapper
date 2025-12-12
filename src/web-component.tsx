@@ -22,7 +22,7 @@ import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {
   const document = useDocument();
   const latestDocRef = useRef<any>(document);
-  const safeApiBaseUrl = useMemo(() => resolveApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
+  const resolvedApiBaseUrl = useMemo(() => resolveApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
 
   // Compute HTML whenever document changes
   const html = useMemo(() => renderToStaticMarkup(document, { rootBlockId: 'root' }), [document]);
@@ -54,7 +54,7 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
   return (
     <>
       <CssBaseline />
-      <App apiBaseUrl={safeApiBaseUrl} />
+      <App apiBaseUrl={resolvedApiBaseUrl} />
     </>
   );
 }
@@ -306,41 +306,43 @@ class EmailBuilderEditor extends HTMLElement {
     if (this._readOnlyMode === readOnly) {
       return;
     }
-    this._attributeSync = true;
-    try {
-      if (readOnly) {
-        const state = getEditorState();
-        this._readOnlySnapshot = {
-          selectedMainTab: state.selectedMainTab,
-          inspectorDrawerOpen: state.inspectorDrawerOpen,
-        };
-        setReadOnly(true);
-        setSelectedMainTab('preview');
-        setInspectorDrawerOpen(false);
-        this._readOnlyMode = true;
+    if (readOnly) {
+      const state = getEditorState();
+      this._readOnlySnapshot = {
+        selectedMainTab: state.selectedMainTab,
+        inspectorDrawerOpen: state.inspectorDrawerOpen,
+      };
+      setReadOnly(true);
+      setSelectedMainTab('preview');
+      setInspectorDrawerOpen(false);
+      this._readOnlyMode = true;
+      if (!this.hasAttribute('readonly')) {
         this._attributeSync = true;
-        if (!this.hasAttribute('readonly')) {
+        try {
           this.setAttribute('readonly', '');
+        } finally {
+          this._attributeSync = false;
         }
-        this._attributeSync = false;
-        this.__dispatchModeChange('read-only');
-      } else {
-        const snapshot = this._readOnlySnapshot;
-        setReadOnly(false);
-        const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
-        const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
-        setSelectedMainTab(nextMainTab);
-        setInspectorDrawerOpen(nextInspector);
-        this._readOnlySnapshot = null;
-        this._readOnlyMode = false;
-        this._attributeSync = true;
-        if (this.hasAttribute('readonly')) {
-          this.removeAttribute('readonly');
-        }
-        this.__dispatchModeChange('interactive');
       }
-    } finally {
-      this._attributeSync = false;
+      this.__dispatchModeChange('read-only');
+    } else {
+      const snapshot = this._readOnlySnapshot;
+      setReadOnly(false);
+      const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
+      const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
+      setSelectedMainTab(nextMainTab);
+      setInspectorDrawerOpen(nextInspector);
+      this._readOnlySnapshot = null;
+      this._readOnlyMode = false;
+      if (this.hasAttribute('readonly')) {
+        this._attributeSync = true;
+        try {
+          this.removeAttribute('readonly');
+        } finally {
+          this._attributeSync = false;
+        }
+      }
+      this.__dispatchModeChange('interactive');
     }
   }
 

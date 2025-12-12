@@ -8,8 +8,10 @@ import twitterIcon from '../../../assets/social/twitter.png';
 import instagramIcon from '../../../assets/social/instagram.png';
 import DOMPurify from 'dompurify';
 
+const isSafeHref = (value: string) => /^(https?:|mailto:|tel:)/i.test(value.trim());
+
 function InlineLink({ href, children }: { href?: string | null; children: React.ReactNode }) {
-  if (!href) return <>{children}</>;
+  if (!href || !isSafeHref(href)) return <>{children}</>;
   return (
     <a href={href} style={{ color: 'inherit', textDecoration: 'none' }}>
       {children}

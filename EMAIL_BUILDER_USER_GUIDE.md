@@ -136,9 +136,9 @@ Four icon buttons control what you're viewing:
 **Structure:**
 ```json
 {
-  "root": { type: "EmailLayout", data: { ... } },
-  "block-id-1": { type: "Text", data: { ... } },
-  "block-id-2": { type: "Button", data: { ... } },
+  "root": { "type": "EmailLayout", "data": { ... } },
+  "block-id-1": { "type": "Text", "data": { ... } },
+  "block-id-2": { "type": "Button", "data": { ... } },
   ...
 }
 ```
@@ -463,7 +463,7 @@ The Rich Text Editor provides a toolbar with:
 - Embedded content
 - Legacy HTML templates
 
-** Warning:**
+**Warning:**
 - HTML is rendered as-is
 - Use with caution - may break email rendering
 - Test thoroughly in preview

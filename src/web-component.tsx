@@ -96,10 +96,8 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   set readOnly(value: boolean) {
-    console.log('set readOnly', value);
     this.setReadOnlyMode(value);
   }
-
   connectedCallback() {
     if (this._root) return; // Already mounted
 

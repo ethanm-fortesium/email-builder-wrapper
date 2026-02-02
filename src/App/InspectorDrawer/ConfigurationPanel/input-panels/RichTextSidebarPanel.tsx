@@ -287,7 +287,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                     </IconButton>
                 </Tooltip>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Tooltip title="Text color">
+                    <Tooltip title="Text colour">
                         <IconButton size="small" onClick={(e) => setColorAnchor(e.currentTarget)} color={activeFormats.color ? 'primary' : 'default'}>
                             <ColorLens fontSize="small" />
                         </IconButton>

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 
-import { useDocument } from '../../documents/editor/EditorContext';
+import { useDocument } from '../../documents/editor/EditorContext.js';
 
-import HighlightedCodePanel from './helper/HighlightedCodePanel';
+import HighlightedCodePanel from './helper/HighlightedCodePanel.js';
 
 export default function JsonPanel() {
   const document = useDocument();

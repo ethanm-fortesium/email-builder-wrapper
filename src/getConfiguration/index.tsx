@@ -1,4 +1,4 @@
-import EMPTY_EMAIL_MESSAGE from './sample/empty-email-message';
+import EMPTY_EMAIL_MESSAGE from './sample/empty-email-message.js';
 
 export default function getConfiguration(template: string) {
 

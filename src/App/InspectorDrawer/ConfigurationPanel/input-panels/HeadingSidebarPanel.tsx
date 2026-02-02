@@ -4,10 +4,10 @@ import { ZodError } from 'zod';
 import { ToggleButton } from '@mui/material';
 import { HeadingProps, HeadingPropsDefaults, HeadingPropsSchema } from '@usewaypoint/block-heading';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import RadioGroupInput from './helpers/inputs/RadioGroupInput';
-import TextInput from './helpers/inputs/TextInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
+import TextInput from './helpers/inputs/TextInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type HeadingSidebarPanelProps = {
   data: HeadingProps;

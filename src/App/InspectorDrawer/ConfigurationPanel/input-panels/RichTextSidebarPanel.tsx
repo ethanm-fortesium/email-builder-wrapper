@@ -18,7 +18,10 @@ import {
     ColorLens,
 } from '@mui/icons-material';
 import Picker from './helpers/inputs/ColorInput/Picker.js';
-import { sanitizeRichText } from '../../../../documents/blocks/RichText/sanitizeRichText.js';
+import {
+    sanitizeRichTextHtml,
+    decorateRichTextListMarkerColorsInPlace,
+} from '../../../../documents/blocks/RichText/sanitizeRichText.js';
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
 export default function RichTextSidebarPanel({ data, setData }: Props) {
@@ -106,11 +109,26 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                 placeholder: 'Start typing…',
             });
             editorRef.current = quill;
+
+            let isDecorating = false;
+            const decorateListMarkers = () => {
+                if (isDecorating) return;
+                isDecorating = true;
+                try {
+                    decorateRichTextListMarkerColorsInPlace(quill.root);
+                } finally {
+                    isDecorating = false;
+                }
+            };
+
             const delta = quill.clipboard.convert(currentHtml);
             quill.setContents(delta);
             applyBlockStyles(quill, latestDataRef.current?.style || {});
+            decorateListMarkers();
+
             quill.on('text-change', () => {
-                const html = sanitizeRichText(quill.root.innerHTML);
+                decorateListMarkers();
+                const html = sanitizeRichTextHtml(quill.root.innerHTML);
                 const latest = latestDataRef.current || {};
                 updateData({ ...latest, props: { ...(latest.props || {}), html } });
             });

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FormatAlignCenterOutlined, FormatAlignLeftOutlined, FormatAlignRightOutlined } from '@mui/icons-material';
 import { ToggleButton } from '@mui/material';
 
-import RadioGroupInput from './RadioGroupInput';
+import RadioGroupInput from './RadioGroupInput.js';
 
 type Props = {
   label: string;

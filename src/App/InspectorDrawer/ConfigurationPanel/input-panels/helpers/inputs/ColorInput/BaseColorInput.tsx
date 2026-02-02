@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { AddOutlined, CloseOutlined } from '@mui/icons-material';
 import { ButtonBase, InputLabel, Menu, Stack } from '@mui/material';
 
-import Picker from './Picker';
+import Picker from './Picker.js';
 
 const BUTTON_SX = {
   border: '1px solid',

@@ -96,6 +96,7 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   set readOnly(value: boolean) {
+    console.log('set readOnly', value);
     this.setReadOnlyMode(value);
   }
 
@@ -303,19 +304,25 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   private __applyReadOnly(readOnly: boolean) {
-    if (this._readOnlyMode === readOnly) {
+    const state = getEditorState();
+    if (this._readOnlyMode === readOnly && state.readOnly === readOnly) {
       return;
     }
+
     if (readOnly) {
-      const state = getEditorState();
       this._readOnlySnapshot = {
         selectedMainTab: state.selectedMainTab,
         inspectorDrawerOpen: state.inspectorDrawerOpen,
       };
-      setReadOnly(true);
+
+      if (!state.readOnly) {
+        setReadOnly(true);
+      }
+
       setSelectedMainTab('preview');
       setInspectorDrawerOpen(false);
       this._readOnlyMode = true;
+
       if (!this.hasAttribute('readonly')) {
         this._attributeSync = true;
         try {
@@ -324,26 +331,36 @@ class EmailBuilderEditor extends HTMLElement {
           this._attributeSync = false;
         }
       }
+
       this.__dispatchModeChange('read-only');
-    } else {
-      const snapshot = this._readOnlySnapshot;
-      setReadOnly(false);
-      const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
-      const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
-      setSelectedMainTab(nextMainTab);
-      setInspectorDrawerOpen(nextInspector);
-      this._readOnlySnapshot = null;
-      this._readOnlyMode = false;
-      if (this.hasAttribute('readonly')) {
-        this._attributeSync = true;
-        try {
-          this.removeAttribute('readonly');
-        } finally {
-          this._attributeSync = false;
-        }
-      }
-      this.__dispatchModeChange('interactive');
+      return;
     }
+
+    const snapshot = this._readOnlySnapshot;
+
+    if (state.readOnly) {
+      setReadOnly(false);
+    }
+
+    const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
+    const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
+
+    setSelectedMainTab(nextMainTab);
+    setInspectorDrawerOpen(nextInspector);
+
+    this._readOnlySnapshot = null;
+    this._readOnlyMode = false;
+
+    if (this.hasAttribute('readonly')) {
+      this._attributeSync = true;
+      try {
+        this.removeAttribute('readonly');
+      } finally {
+        this._attributeSync = false;
+      }
+    }
+
+    this.__dispatchModeChange('interactive');
   }
 
   private __dispatchModeChange(mode: 'read-only' | 'interactive') {

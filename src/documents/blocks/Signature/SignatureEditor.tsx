@@ -72,12 +72,13 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   }
 
   const socialParts: Array<React.ReactNode> = [];
-  const iconStyle: React.CSSProperties = { width: 25, height: 25, display: 'inline-block', verticalAlign: 'middle' };
+  const iconSize = 25;
+  const iconStyle: React.CSSProperties = { width: iconSize, height: iconSize, display: 'block' };
   const wrapIcon = (href: string | null | undefined, iconSrc: string, alt: string) => {
-    if (!href) return null;
+    if (!href || !isSafeHref(href)) return null;
     return (
       <a key={alt} href={href} style={{ display: 'inline-block', marginRight: 8 }}>
-        <img src={iconSrc} alt={alt} style={iconStyle} />
+        <img src={iconSrc} alt={alt} width={iconSize} height={iconSize} style={iconStyle} />
       </a>
     );
   };
@@ -93,51 +94,110 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
     ? DOMPurify.sanitize(disclaimerHtml, { USE_PROFILES: { html: true } })
     : '';
 
+  const align: React.CSSProperties['textAlign'] = (style?.textAlign as any) || 'left';
+  const cellAlign: 'left' | 'center' | 'right' = align === 'center' ? 'center' : align === 'right' ? 'right' : 'left';
+  const spacerRow = (height: number) => (
+    <tr>
+      <td style={{ fontSize: 0, lineHeight: 0, height }} height={height}>
+        &nbsp;
+      </td>
+    </tr>
+  );
+
+  const contentCellStyle: React.CSSProperties = { fontSize: contentFontSize ?? 12, lineHeight: 1.4 };
+
   return (
-    <div style={wrapperStyle}>
-      {headerLines.length > 0 && (
-        <div style={{ fontSize: contentFontSize ?? 12, lineHeight: 1.4, marginBottom: logoUrl ? 8 : 0 }}>
-          {headerLines.map((c, i) => (
-            <div key={`h-${i}`}>{c}</div>
-          ))}
-        </div>
-      )}
-      {logoUrl && (
-        <div style={{ marginBottom: otherLines.length > 0 ? 10 : 0 }}>
-          <img
-            src={logoUrl}
-            alt={company || 'Logo'}
-            style={{
-              width: logoWidth || 160,
-              maxWidth: '100%',
-              height: 'auto',
-              display: style?.textAlign && style.textAlign !== 'left' ? 'block' : 'inline-block',
-              ...(style?.textAlign === 'center'
-                ? { marginLeft: 'auto', marginRight: 'auto' }
-                : style?.textAlign === 'right'
-                ? { marginLeft: 'auto' }
-                : {}),
-            }}
-          />
-        </div>
-      )}
-      
-      {otherLines.length > 0 && (
-        <div style={{ fontSize: contentFontSize ?? 12, lineHeight: 1.4 }}>
-          {otherLines.map((c, i) => (
-            <div key={`o-${i}`}>{c}</div>
-          ))}
-        </div>
-      )}
-      {socialParts.length > 0 && (
-        <div style={{ marginTop: 10 }}>{socialParts}</div>
-      )}
-      {disclaimerHtml && (
-        <div style={{ fontSize: '10px', opacity: 0.6, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: sanitizedDisclaimer }} />
-      )}
-      {isEmpty && (
-        <div style={{ fontSize: 11, fontStyle: 'italic', opacity: 0.5 }}>Signature (empty)</div>
-      )}
-    </div>
+    <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <tbody>
+        <tr>
+          <td style={wrapperStyle} align={cellAlign}>
+            <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {headerLines.length > 0 &&
+                  headerLines.map((c, i) => (
+                    <tr key={`h-${i}`}>
+                      <td style={contentCellStyle} align={cellAlign}>
+                        {c}
+                      </td>
+                    </tr>
+                  ))}
+
+                {headerLines.length > 0 && logoUrl && spacerRow(8)}
+
+                {logoUrl && (
+                  <tr>
+                    <td align={cellAlign}>
+                      <img
+                        src={logoUrl}
+                        alt={company || 'Logo'}
+                        width={logoWidth || 160}
+                        style={{
+                          width: logoWidth || 160,
+                          maxWidth: '100%',
+                          height: 'auto',
+                          display: 'block',
+                          border: 0,
+                          outline: 'none',
+                          textDecoration: 'none',
+                        }}
+                      />
+                    </td>
+                  </tr>
+                )}
+
+                {logoUrl && otherLines.length > 0 && spacerRow(10)}
+
+                {otherLines.length > 0 &&
+                  otherLines.map((c, i) => (
+                    <tr key={`o-${i}`}>
+                      <td style={contentCellStyle} align={cellAlign}>
+                        {c}
+                      </td>
+                    </tr>
+                  ))}
+
+                {socialParts.length > 0 && (
+                  <>
+                    {spacerRow(10)}
+                    <tr>
+                      <td align={cellAlign}>
+                        <table role="presentation" cellPadding={0} cellSpacing={0} border={0} style={{ borderCollapse: 'collapse' }}>
+                          <tbody>
+                            <tr>
+                              {socialParts.map((node, idx) => (
+                                <td key={`s-${idx}`} style={{ paddingRight: idx === socialParts.length - 1 ? 0 : 8 }}>
+                                  {node}
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </>
+                )}
+
+                {disclaimerHtml && (
+                  <>
+                    {spacerRow(8)}
+                    <tr>
+                      <td style={{ fontSize: '10px', opacity: 0.6 }} align={cellAlign} dangerouslySetInnerHTML={{ __html: sanitizedDisclaimer }} />
+                    </tr>
+                  </>
+                )}
+
+                {isEmpty && (
+                  <tr>
+                    <td style={{ fontSize: 11, fontStyle: 'italic', opacity: 0.5 }} align={cellAlign}>
+                      Signature (empty)
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   );
 }

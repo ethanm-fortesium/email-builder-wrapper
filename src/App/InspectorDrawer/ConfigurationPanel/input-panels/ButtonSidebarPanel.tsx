@@ -3,11 +3,11 @@ import { ZodError } from 'zod';
 import { ToggleButton } from '@mui/material';
 import { ButtonProps, ButtonPropsDefaults, ButtonPropsSchema } from '@usewaypoint/block-button';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColorInput from './helpers/inputs/ColorInput';
-import RadioGroupInput from './helpers/inputs/RadioGroupInput';
-import TextInput from './helpers/inputs/TextInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import ColorInput from './helpers/inputs/ColorInput/index.js';
+import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
+import TextInput from './helpers/inputs/TextInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type ButtonSidebarPanelProps = {
   data: ButtonProps;

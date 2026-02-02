@@ -4,10 +4,10 @@ import { ZodError } from 'zod';
 import { HeightOutlined } from '@mui/icons-material';
 import { DividerProps, DividerPropsDefaults, DividerPropsSchema } from '@usewaypoint/block-divider';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColorInput from './helpers/inputs/ColorInput';
-import SliderInput from './helpers/inputs/SliderInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import ColorInput from './helpers/inputs/ColorInput/index.js';
+import SliderInput from './helpers/inputs/SliderInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type DividerSidebarPanelProps = {
   data: DividerProps;
@@ -31,7 +31,7 @@ export default function DividerSidebarPanel({ data, setData }: DividerSidebarPan
   return (
     <BaseSidebarPanel title="Divider block">
       <ColorInput
-        label="Color"
+        label="Colour"
         defaultValue={lineColor}
         onChange={(lineColor) => updateData({ ...data, props: { ...data.props, lineColor } })}
       />

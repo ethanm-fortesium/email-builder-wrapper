@@ -12,9 +12,9 @@ import {
   Typography,
 } from '@mui/material';
 
-import { resetDocument } from '../../../documents/editor/EditorContext';
+import { resetDocument } from '../../../documents/editor/EditorContext.js';
 
-import validateJsonStringValue from './validateJsonStringValue';
+import validateJsonStringValue from './validateJsonStringValue.js';
 
 type ImportJsonDialogProps = {
   onClose: () => void;

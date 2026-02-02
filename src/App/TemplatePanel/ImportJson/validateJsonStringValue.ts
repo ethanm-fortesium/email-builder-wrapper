@@ -1,4 +1,4 @@
-import { EditorConfigurationSchema, TEditorConfiguration } from '../../../documents/editor/core';
+import { EditorConfigurationSchema, TEditorConfiguration } from '../../../documents/editor/core.js';
 
 type TResult = { error: string; data?: undefined } | { data: TEditorConfiguration; error?: undefined };
 

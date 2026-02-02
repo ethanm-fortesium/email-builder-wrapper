@@ -3,11 +3,13 @@ import React from 'react';
 import { CodeOutlined, DataObjectOutlined, EditOutlined, PreviewOutlined } from '@mui/icons-material';
 import { Tab, Tabs, Tooltip } from '@mui/material';
 
-import { setSelectedMainTab, useSelectedMainTab } from '../../documents/editor/EditorContext.js';
+import { setSelectedMainTab, useReadOnlyMode, useSelectedMainTab } from '../../documents/editor/EditorContext.js';
 
 export default function MainTabsGroup() {
   const selectedMainTab = useSelectedMainTab();
+  const readOnly = useReadOnlyMode();
   const handleChange = (_: unknown, v: unknown) => {
+    if (readOnly) return;
     switch (v) {
       case 'json':
       case 'preview':

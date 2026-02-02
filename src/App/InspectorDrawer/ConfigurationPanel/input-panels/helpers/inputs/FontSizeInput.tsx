@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { TextFieldsOutlined } from '@mui/icons-material';
 import { InputLabel, Stack } from '@mui/material';
 
-import RawSliderInput from './raw/RawSliderInput';
+import RawSliderInput from './raw/RawSliderInput.js';
 
 type Props = {
   label: string;

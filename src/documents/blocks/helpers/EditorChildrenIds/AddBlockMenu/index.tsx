@@ -13,11 +13,11 @@ type Props = {
 };
 export default function AddBlockButton({ onSelect, placeholder }: Props) {
   const preview = usePreviewMode();
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [buttonElement, setButtonElement] = useState<HTMLElement | null>(null);
   if (preview) {
     return null; // no add button in preview
   }
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
-  const [buttonElement, setButtonElement] = useState<HTMLElement | null>(null);
 
   const handleButtonClick = () => {
     setMenuAnchorEl(buttonElement);

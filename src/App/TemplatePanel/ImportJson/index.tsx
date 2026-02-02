@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/material';
 
-import ImportJsonDialog from './ImportJsonDialog';
+import ImportJsonDialog from './ImportJsonDialog.js';
 
 export default function ImportJson() {
   const [open, setOpen] = useState(false);

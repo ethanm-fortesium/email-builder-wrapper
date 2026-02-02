@@ -23,6 +23,8 @@ import EmailLayoutPropsSchema from '../documents/blocks/EmailLayout/EmailLayoutP
 import EmailLayoutReader from '../documents/blocks/EmailLayout/EmailLayoutReader.js';
 import SignaturePropsSchema from '../documents/blocks/Signature/SignaturePropsSchema.js';
 import SignatureEditor from '../documents/blocks/Signature/SignatureEditor.js';
+import RichTextPropsSchema from '../documents/blocks/RichText/RichTextPropsSchema.js';
+import RichTextReader from '../documents/blocks/RichText/RichTextReader.js';
 
 const ReaderContext = createContext<TReaderDocument>({});
 
@@ -43,7 +45,6 @@ const READER_DICTIONARY = buildBlockConfigurationDictionary({
     schema: EmailLayoutPropsSchema,
     Component: EmailLayoutReader,
   },
-  //
   Avatar: {
     schema: AvatarPropsSchema,
     Component: Avatar,
@@ -79,6 +80,10 @@ const READER_DICTIONARY = buildBlockConfigurationDictionary({
   Signature: {
     schema: SignaturePropsSchema,
     Component: SignatureEditor,
+  },
+  RichText: {
+    schema: RichTextPropsSchema,
+    Component: RichTextReader,
   },
 });
 

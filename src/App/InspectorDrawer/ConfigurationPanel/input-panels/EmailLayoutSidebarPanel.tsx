@@ -34,17 +34,17 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
   return (
     <BaseSidebarPanel title="Global">
       <ColorInput
-        label="Backdrop color"
+        label="Backdrop colour"
         defaultValue={data.backdropColor ?? '#F5F5F5'}
         onChange={(backdropColor) => updateData({ ...data, backdropColor })}
       />
       <ColorInput
-        label="Canvas color"
+        label="Canvas colour"
         defaultValue={data.canvasColor ?? '#FFFFFF'}
         onChange={(canvasColor) => updateData({ ...data, canvasColor })}
       />
       <NullableColorInput
-        label="Canvas border color"
+        label="Canvas border colour"
         defaultValue={data.borderColor ?? null}
         onChange={(borderColor) => updateData({ ...data, borderColor })}
       />
@@ -76,7 +76,7 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         onChange={(fontFamily) => updateData({ ...data, fontFamily })}
       />
       <ColorInput
-        label="Text color"
+        label="Text colour"
         defaultValue={data.textColor ?? '#262626'}
         onChange={(textColor) => updateData({ ...data, textColor })}
       />

@@ -14,14 +14,14 @@ import {
 import ToggleInspectorPanelButton from '../InspectorDrawer/ToggleInspectorPanelButton.js';
 import { PreviewModeProvider } from './PreviewModeContext.js';
 
-import DownloadJson from './DownloadJson';
-import HtmlPanel from './HtmlPanel';
-import ImportJson from './ImportJson';
-import JsonPanel from './JsonPanel';
+import DownloadJson from './DownloadJson/index.js';
+import HtmlPanel from './HtmlPanel.js';
+import ImportJson from './ImportJson/index.js';
+import JsonPanel from './JsonPanel.js';
 import MainTabsGroup from './MainTabsGroup.js';
 
 export default function TemplatePanel() {
-  const document = useDocument();
+  const _document = useDocument();
   const selectedMainTab = useSelectedMainTab();
   const selectedScreenSize = useSelectedScreenSize();
 

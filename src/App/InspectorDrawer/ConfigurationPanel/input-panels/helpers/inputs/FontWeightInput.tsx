@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { ToggleButton } from '@mui/material';
 
-import RadioGroupInput from './RadioGroupInput';
+import RadioGroupInput from './RadioGroupInput.js';
 
 type Props = {
   label: string;

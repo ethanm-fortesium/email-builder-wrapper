@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import { IconButton, Tooltip } from '@mui/material';
 
-import { useDocument } from '../../../documents/editor/EditorContext';
+import { useDocument } from '../../../documents/editor/EditorContext.js';
 
 export default function DownloadJson() {
   const doc = useDocument();

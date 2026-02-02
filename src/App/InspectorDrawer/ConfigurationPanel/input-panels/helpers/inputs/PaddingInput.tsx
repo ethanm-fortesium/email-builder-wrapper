@@ -8,7 +8,7 @@ import {
 } from '@mui/icons-material';
 import { InputLabel, Stack } from '@mui/material';
 
-import RawSliderInput from './raw/RawSliderInput';
+import RawSliderInput from './raw/RawSliderInput.js';
 
 type TPaddingValue = {
   top: number;

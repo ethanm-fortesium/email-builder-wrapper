@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ZodError } from 'zod';
 
-import ContainerPropsSchema, { ContainerProps } from '../../../../documents/blocks/Container/ContainerPropsSchema';
+import ContainerPropsSchema, { ContainerProps } from '../../../../documents/blocks/Container/ContainerPropsSchema.js';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type ContainerSidebarPanelProps = {
   data: ContainerProps;

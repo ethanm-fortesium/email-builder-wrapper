@@ -3,7 +3,7 @@ import { HexColorInput, HexColorPicker } from 'react-colorful';
 
 import { Box, Stack, SxProps } from '@mui/material';
 
-import Swatch from './Swatch';
+import Swatch from './Swatch.js';
 
 const DEFAULT_PRESET_COLORS = [
   '#E11D48',

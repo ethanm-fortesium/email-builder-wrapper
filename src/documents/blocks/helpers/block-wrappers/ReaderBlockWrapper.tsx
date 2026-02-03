@@ -11,6 +11,13 @@ type TReaderBlockWrapperProps = {
   children: JSX.Element;
 };
 
+/**
+ * Wraps children in an EmailTable and applies padding, background color, border, and conditional corner radii derived from the document root.
+ *
+ * @param style - Style object; `padding`, `backgroundColor`, and `borderColor` are read to style the table cell.
+ * @param blockId - ID of the block used to determine whether this block is a direct child of the document root and whether to apply first/last corner radii.
+ * @returns A JSX element: an EmailTable containing `children` with the computed cell styles and optional rounded corners.
+ */
 export default function ReaderBlockWrapper({ style, blockId, children }: TReaderBlockWrapperProps) {
   const document = useDocument?.() as any;
   const rootData = document?.root?.data;

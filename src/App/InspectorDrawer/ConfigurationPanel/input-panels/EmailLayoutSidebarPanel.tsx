@@ -18,6 +18,18 @@ type EmailLayoutSidebarFieldsProps = {
   data: EmailLayoutProps;
   setData: (v: EmailLayoutProps) => void;
 };
+/**
+ * Renders the "Global" sidebar fields for editing email layout properties and propagates validated updates.
+ *
+ * The component presents controls for backdrop colour, canvas colour, optional canvas border colour,
+ * canvas border radius, canvas width, font family, and text colour. When a control changes, the
+ * new layout object is validated; valid updates are passed to `setData`, and validation errors are
+ * stored in component state.
+ *
+ * @param data - Current email layout properties displayed by the controls
+ * @param setData - Callback invoked with validated email layout properties when an update succeeds
+ * @returns The sidebar panel containing inputs for global email layout settings
+ */
 export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutSidebarFieldsProps) {
   const [, setErrors] = useState<ZodError | null>(null);
 

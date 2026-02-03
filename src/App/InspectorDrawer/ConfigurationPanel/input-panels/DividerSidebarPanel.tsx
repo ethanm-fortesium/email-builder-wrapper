@@ -13,6 +13,15 @@ type DividerSidebarPanelProps = {
   data: DividerProps;
   setData: (v: DividerProps) => void;
 };
+/**
+ * Sidebar panel for editing a Divider block's properties.
+ *
+ * Renders controls for line color, height, and style; validates changes with `DividerPropsSchema` and calls `setData` with the validated updated `DividerProps`. Validation errors are retained in component state.
+ *
+ * @param data - The current `DividerProps` being edited.
+ * @param setData - Callback invoked with the updated `DividerProps` when validation succeeds.
+ * @returns The sidebar panel JSX element for the Divider block.
+ */
 export default function DividerSidebarPanel({ data, setData }: DividerSidebarPanelProps) {
   const [, setErrors] = useState<ZodError | null>(null);
   const updateData = (d: unknown) => {

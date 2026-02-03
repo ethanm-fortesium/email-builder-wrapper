@@ -20,6 +20,15 @@ import ImportJson from './ImportJson/index.js';
 import JsonPanel from './JsonPanel.js';
 import MainTabsGroup from './MainTabsGroup.js';
 
+/**
+ * Render the template editor panel with a sticky header of controls and a switchable main content area.
+ *
+ * The header includes main tab controls, import/export buttons, a screen-size toggle, and an inspector toggle.
+ * The main area displays the editor, preview, HTML, or JSON view according to the selected main tab and
+ * adapts layout when the screen size is set to mobile.
+ *
+ * @returns The rendered React element for the template panel, including header controls and the selected main content view.
+ */
 export default function TemplatePanel() {
   const _document = useDocument();
   const selectedMainTab = useSelectedMainTab();

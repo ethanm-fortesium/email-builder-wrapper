@@ -21,6 +21,18 @@ type ImageSidebarPanelProps = {
   setData: (v: ImageProps) => void;
   apiBaseUrl: string; 
 };
+/**
+ * Sidebar panel UI for editing an image block's properties and uploading images.
+ *
+ * Provides controls for alt text, click-through URL, width/height, vertical alignment,
+ * and style properties, and includes a file input that uploads an image and updates
+ * the block's `props.url` with the uploaded file location.
+ *
+ * @param data - The image block data (ImageProps) used to populate the panel's inputs.
+ * @param setData - Callback invoked with updated ImageProps when the panel changes the data.
+ * @param apiBaseUrl - Optional API base URL override used to resolve the upload endpoint; falls back to window.location.origin when not provided.
+ * @returns A React element that renders the image block sidebar panel and upload controls.
+ */
 export default function ImageSidebarPanel({ data, setData, apiBaseUrl }: ImageSidebarPanelProps) {
   const [, setErrors] = useState<Zod.ZodError | null>(null);
   const [uploading, setUploading] = useState(false);

@@ -5,6 +5,12 @@ import { EmailTable } from '../helpers/emailTable.js';
 
 import { ContainerProps } from './ContainerPropsSchema.js';
 
+/**
+ * Compute a CSS border declaration from the provided container style's borderColor.
+ *
+ * @param style - Container style object; the function uses `style.borderColor` if present.
+ * @returns A CSS border string in the form `"1px solid {color}"` when `borderColor` is set, `undefined` otherwise.
+ */
 function getBorder(style?: ContainerProps['style']) {
   const color = style?.borderColor ?? undefined;
   if (!color) {
@@ -13,6 +19,14 @@ function getBorder(style?: ContainerProps['style']) {
   return `1px solid ${color}`;
 }
 
+/**
+ * Renders a container that wraps and lays out child ReaderBlock components using EmailTable,
+ * applying styling from the provided ContainerProps.
+ *
+ * @param style - Optional layout and visual settings (reads backgroundColor, padding, borderRadius, borderColor).
+ * @param props - Container props that may include `childrenIds`, an array of child block IDs to render.
+ * @returns The element that renders the styled container and its child ReaderBlock components.
+ */
 export default function ContainerReader({ style, props }: ContainerProps) {
   const childrenIds = props?.childrenIds ?? [];
   const backgroundColor = style?.backgroundColor ?? undefined;

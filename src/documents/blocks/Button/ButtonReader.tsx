@@ -11,6 +11,12 @@ export type ButtonProps = z.infer<typeof ButtonPropsSchema>;
 type ButtonSize = NonNullable<ButtonProps['props']>['size'];
 type ButtonShape = NonNullable<ButtonProps['props']>['buttonStyle'];
 
+/**
+ * Selects vertical and horizontal padding values for a button based on its size.
+ *
+ * @param size - The button size identifier (`'x-small' | 'small' | 'medium' | 'large'`)
+ * @returns A two-element tuple `[paddingBlock, paddingInline]` in pixels where `paddingBlock` is the vertical (top/bottom) padding and `paddingInline` is the horizontal (left/right) padding
+ */
 function getPadding(size: ButtonSize) {
     switch (size) {
         case 'x-small':
@@ -25,6 +31,12 @@ function getPadding(size: ButtonSize) {
     }
 }
 
+/**
+ * Map a button shape to its border-radius in pixels.
+ *
+ * @param shape - The button shape ('rectangle', 'pill', or 'rounded')
+ * @returns The border radius in pixels: `0` for 'rectangle', `999` for 'pill', `4` for 'rounded' (default)
+ */
 function getRadiusPx(shape: ButtonShape) {
     switch (shape) {
         case 'rectangle':
@@ -37,6 +49,14 @@ function getRadiusPx(shape: ButtonShape) {
     }
 }
 
+/**
+ * Compute the VML `arcsize` ratio to represent a button's corner curvature.
+ *
+ * @param shape - The button shape; `'pill'` yields an arcsize of `1`, `'rectangle'` yields `0`, other shapes compute based on `radiusPx`
+ * @param radiusPx - Corner radius in pixels used to compute the arc height
+ * @param height - Button height in pixels; values <= 0 produce an arcsize of `0`
+ * @returns A number between `0` and `1` representing the VML `arcsize` (fraction of the button height)
+ */
 function getArcSize(shape: ButtonShape, radiusPx: number, height: number) {
     if (shape === 'pill') {
         return 1;
@@ -51,6 +71,12 @@ function getArcSize(shape: ButtonShape, radiusPx: number, height: number) {
     return Math.max(0, Math.min(1, value));
 }
 
+/**
+ * Escape special HTML characters in a string to their corresponding HTML entities.
+ *
+ * @param value - The input string to sanitize for HTML insertion
+ * @returns The input string with `&`, `<`, `>`, `"`, and `'` replaced by their HTML entities
+ */
 function escapeHtml(value: string) {
     return value.replace(/[&<>"']/g, (char) => {
         switch (char) {
@@ -70,10 +96,24 @@ function escapeHtml(value: string) {
     });
 }
 
+/**
+ * Convert a CamelCase or PascalCase string to kebab-case.
+ *
+ * @param value - Input string (commonly camelCase or PascalCase)
+ * @returns The kebab-case form of `value` (uppercase letters become `-` followed by their lowercase form)
+ */
 function camelToKebab(value: string) {
     return value.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }
 
+/**
+ * Serialize a style object into a CSS inline string.
+ *
+ * Converts object entries to `kebab-case:key:value;` pairs, omitting entries whose value is `undefined`, `null`, or the empty string. Numeric values are converted to strings.
+ *
+ * @param style - Mapping of CSS property names (camelCase or kebabCase) to values; entries with `undefined`, `null`, or `''` are excluded.
+ * @returns A concatenated CSS string suitable for use in an inline `style` attribute (e.g. `"font-size:12px;color:#000;"`).
+ */
 function styleObjectToString(style: Record<string, string | number | undefined>) {
     return Object.entries(style)
         .filter(([, value]) => value !== undefined && value !== null && value !== '')
@@ -84,6 +124,17 @@ function styleObjectToString(style: Record<string, string | number | undefined>)
         .join('');
 }
 
+/**
+ * Render an email-optimized button with an Outlook (VML) fallback and an inline-styled HTML fallback.
+ *
+ * Renders a table-based button suitable for broad email client compatibility, honoring provided visual
+ * style overrides and ButtonProps (text, url, fullWidth, size, shape and colors). The output preserves
+ * rounded corners and internal padding for Outlook via VML and uses an inline-styled anchor for non-MSO clients.
+ *
+ * @param style - Optional visual overrides applied to the button container and text (e.g., padding, backgroundColor, textAlign, fontFamily, fontSize, fontWeight).
+ * @param props - Button-specific properties (text, url, fullWidth, size, buttonStyle, buttonBackgroundColor, buttonTextColor); merged with defaults when omitted.
+ * @returns A JSX element containing the email-compatible button markup (VML for Outlook and inline HTML/CSS for other clients).
+ */
 export default function ButtonReader({ style, props }: ButtonProps) {
     const cellPadding = style?.padding ?? undefined;
     const wrapperBackground = style?.backgroundColor ?? undefined;

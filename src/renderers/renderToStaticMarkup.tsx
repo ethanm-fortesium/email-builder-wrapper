@@ -20,6 +20,13 @@ type LayoutAppearance = {
   fontFamily: string;
 };
 
+/**
+ * Derives visual layout properties for an email from the document's EmailLayout block or sensible defaults.
+ *
+ * @param document - Reader document containing blocks indexed by id
+ * @param rootBlockId - Id of the root block to read for EmailLayout props
+ * @returns A LayoutAppearance containing `backdropColor`, `canvasColor`, `borderColor` (or `null`), `borderRadius`, `canvasWidth`, `textColor`, and `fontFamily`; values are taken from the EmailLayout block when present and fall back to defaults otherwise
+ */
 function getLayoutAppearance(document: TReaderDocument, rootBlockId: string): LayoutAppearance {
   const block = document[rootBlockId] as EmailLayoutBlock | undefined;
   if (!block || block.type !== 'EmailLayout') {
@@ -49,6 +56,17 @@ function getLayoutAppearance(document: TReaderDocument, rootBlockId: string): La
 type TOptions = {
   rootBlockId: string;
 };
+/**
+ * Render a reader document to a complete, layout-aware static HTML string.
+ *
+ * The output is a full HTML document that embeds the rendered reader content and
+ * applies layout appearance (backdrop, canvas, border, radius, width, text color, font)
+ * via inline styles and data attributes for both MSO (Outlook) and modern email clients.
+ *
+ * @param document - The reader document to render.
+ * @param rootBlockId - Root block id used to derive layout appearance values.
+ * @returns The assembled HTML document as a string.
+ */
 export default function renderToStaticMarkup(document: TReaderDocument, { rootBlockId }: TOptions) {
   const bodyContent = baseRenderToStaticMarkup(<Reader document={document} rootBlockId={rootBlockId} />);
   const layout = getLayoutAppearance(document, rootBlockId);

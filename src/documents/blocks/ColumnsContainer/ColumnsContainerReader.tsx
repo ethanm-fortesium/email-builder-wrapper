@@ -15,6 +15,23 @@ const DEFAULTS = {
   contentAlignment: 'middle' as 'top' | 'middle' | 'bottom',
 };
 
+/**
+ * Render a table-based multi-column container driven by the provided columns configuration.
+ *
+ * The component renders an EmailTable containing a single row with `columnsCount` cells.
+ * Each cell receives left/right padding computed from `columnsGap`, an optional fixed width
+ * from `fixedWidths`, and vertical alignment from `contentAlignment`. Children IDs from
+ * each column definition are rendered as `ReaderBlock` elements inside their respective cell.
+ *
+ * @param style - Optional style object; `padding` and `backgroundColor` (if present) are applied to the EmailTable.
+ * @param props - Container configuration:
+ *   - `columns`: array of column definitions (each with `childrenIds`)
+ *   - `columnsCount`: number of columns to render
+ *   - `columnsGap`: gap between columns (used to compute cell paddings)
+ *   - `contentAlignment`: vertical alignment for cell content (`'top' | 'middle' | 'bottom'`)
+ *   - `fixedWidths`: optional array of per-column fixed widths in pixels
+ * @returns The rendered JSX tree for the multi-column container.
+ */
 export default function ColumnsContainerReader({ style, props }: ColumnsContainerProps) {
   const columnsConfig = props?.columns ?? [];
   const columnsCount = props?.columnsCount ?? DEFAULTS.columnsCount;
@@ -66,6 +83,14 @@ export default function ColumnsContainerReader({ style, props }: ColumnsContaine
   );
 }
 
+/**
+ * Compute the left padding for a column based on its position, total columns, and the desired gap.
+ *
+ * @param index - Zero-based index of the column
+ * @param columnsGap - Desired total gap between adjacent columns
+ * @param columnsCount - Total number of columns in the layout
+ * @returns The padding-left value for the specified column: `0` for the first column; when `columnsCount` is `2` returns `columnsGap / 2`; for multi-column layouts returns `columnsGap / 3` for the second column and `(2 * columnsGap) / 3` for subsequent columns
+ */
 function getPaddingBefore(index: number, columnsGap: number, columnsCount: number) {
   if (index === 0) {
     return 0;
@@ -79,6 +104,14 @@ function getPaddingBefore(index: number, columnsGap: number, columnsCount: numbe
   return (2 * columnsGap) / 3;
 }
 
+/**
+ * Computes the right padding (padding-right) for a column cell based on its zero-based index, the total gap between columns, and the number of columns.
+ *
+ * @param index - Zero-based index of the column
+ * @param columnsGap - Total gap value used to distribute spacing between columns
+ * @param columnsCount - Total number of columns in the layout
+ * @returns The computed padding-right value for the column index
+ */
 function getPaddingAfter(index: number, columnsGap: number, columnsCount: number) {
   if (columnsCount === 2) {
     if (index === 0) {

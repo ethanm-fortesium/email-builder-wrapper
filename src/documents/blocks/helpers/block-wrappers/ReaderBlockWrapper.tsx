@@ -1,6 +1,9 @@
 import React, { CSSProperties } from 'react';
-import { TStyle } from '../TStyle.js';
+
 import { useDocument } from '../../../editor/EditorContext.js';
+
+import { EmailTable } from '../emailTable.js';
+import { TStyle } from '../TStyle.js';
 
 type TReaderBlockWrapperProps = {
   style: TStyle;
@@ -14,17 +17,16 @@ export default function ReaderBlockWrapper({ style, blockId, children }: TReader
   const rootChildren: string[] = rootData?.childrenIds || [];
   const rootRadius: number = rootData?.borderRadius ?? 0;
 
-  const cssStyle: CSSProperties = { ...style } as any;
-  const padding = (style as any).padding;
-  if (padding) {
-    const { top, bottom, left, right } = padding;
-    cssStyle.padding = `${top}px ${right}px ${bottom}px ${left}px`;
-    delete (cssStyle as any).padding;
+  const padding = (style as any)?.padding;
+  const backgroundColor = (style as any)?.backgroundColor;
+  const borderColor = (style as any)?.borderColor;
+
+  const cellStyle: CSSProperties = {};
+  if (borderColor) {
+    cellStyle.border = `1px solid ${borderColor}`;
   }
-  if ((style as any).borderColor) {
-    cssStyle.border = `1px solid ${(style as any).borderColor}`;
-    delete (cssStyle as any).borderColor;
-  }
+  cellStyle.maxWidth = '100%';
+  cellStyle.position = 'relative';
 
   // Determine if this block is a direct root child and first / last
   const isRootChild = rootChildren.includes(blockId);
@@ -45,16 +47,12 @@ export default function ReaderBlockWrapper({ style, blockId, children }: TReader
   }
 
   return (
-    <div style={{ maxWidth: '100%', position: 'relative' }}>
-      <div
-        style={{
-          ...cssStyle,
-          ...corner,
-          overflow: applyRadius ? 'hidden' : undefined, 
-        }}
-      >
-        {children}
-      </div>
-    </div>
+    <EmailTable
+      backgroundColor={backgroundColor}
+      padding={padding as any}
+      extraCellStyle={{ ...cellStyle, ...corner, overflow: applyRadius ? 'hidden' : undefined }}
+    >
+      {children}
+    </EmailTable>
   );
 }

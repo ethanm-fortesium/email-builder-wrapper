@@ -171,7 +171,9 @@ class EmailBuilderEditor extends HTMLElement {
   // Programmatically replace editor content with provided raw HTML
   public setHtml(htmlContent: string) {
     if (!htmlContent || typeof htmlContent !== 'string') return;
-    if (htmlContent.length === 0) {
+    const sanitizedHtml = this.__sanitizeHtmlPayload(htmlContent);
+
+    if (sanitizedHtml.length === 0) {
       if (!this._root) {
         this._pendingConfig = this.__buildEmptyDocument();
         return;
@@ -193,16 +195,16 @@ class EmailBuilderEditor extends HTMLElement {
     }
 
     // Short-circuit if identical to last imported to avoid infinite feedback loops
-    if (this._lastImportedHtml === htmlContent) return;
-    this._lastImportedHtml = htmlContent;
+    if (this._lastImportedHtml === sanitizedHtml) return;
+    this._lastImportedHtml = sanitizedHtml;
     this._lastImportedConfigHash = null; // Clear config hash when importing HTML
 
     if (!this._root) {
-      this._pendingHtml = htmlContent;
+      this._pendingHtml = sanitizedHtml;
       return;
     }
     this._isProgrammaticImport = true;
-    this.__applyHtml(htmlContent);
+    this.__applyHtml(sanitizedHtml);
   }
 
   // Smart template import: accepts raw HTML string, JSON string, or configuration object
@@ -298,6 +300,42 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   // --- Helpers --------------------------------------------------
+  private __sanitizeHtmlPayload(htmlContent: string) {
+    if (!htmlContent) {
+      return '';
+    }
+
+    const styles: string[] = [];
+
+    const captureStyles = (source: string | null | undefined) => {
+      if (!source) return;
+      const matches = source.match(/<style[^>]*>[\s\S]*?<\/style>/gi);
+      if (matches) {
+        styles.push(...matches);
+      }
+    };
+
+    const headMatch = htmlContent.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+    captureStyles(headMatch?.[1]);
+
+    const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    let working = bodyMatch ? bodyMatch[1] : htmlContent;
+
+    captureStyles(working);
+    working = working.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+    working = working
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<html[^>]*>/gi, '')
+      .replace(/<\/html>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<body[^>]*>/gi, '')
+      .replace(/<\/body>/gi, '');
+
+    const cleaned = working.trim();
+    return [...styles, cleaned].filter(Boolean).join('\n');
+  }
+
   private __isLikelyConfiguration(obj: any): boolean {
     if (!obj || typeof obj !== 'object') return false;
     const root = obj.root;

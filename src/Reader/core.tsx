@@ -1,14 +1,14 @@
 import React, { createContext, useContext } from 'react';
 import { z } from 'zod';
 
-import { Avatar, AvatarPropsSchema } from '@usewaypoint/block-avatar';
-import { Button, ButtonPropsSchema } from '@usewaypoint/block-button';
-import { Divider, DividerPropsSchema } from '@usewaypoint/block-divider';
-import { Heading, HeadingPropsSchema } from '@usewaypoint/block-heading';
-import { Html, HtmlPropsSchema } from '@usewaypoint/block-html';
-import { Image, ImagePropsSchema } from '@usewaypoint/block-image';
-import { Spacer, SpacerPropsSchema } from '@usewaypoint/block-spacer';
-import { Text, TextPropsSchema } from '@usewaypoint/block-text';
+import { AvatarPropsSchema } from '@usewaypoint/block-avatar';
+import { ButtonPropsSchema } from '@usewaypoint/block-button';
+import { DividerPropsSchema } from '@usewaypoint/block-divider';
+import { HeadingPropsSchema } from '@usewaypoint/block-heading';
+import { HtmlPropsSchema } from '@usewaypoint/block-html';
+import { ImagePropsSchema } from '@usewaypoint/block-image';
+import { SpacerPropsSchema } from '@usewaypoint/block-spacer';
+import { TextPropsSchema } from '@usewaypoint/block-text';
 import {
   buildBlockComponent,
   buildBlockConfigurationDictionary,
@@ -21,8 +21,16 @@ import ContainerPropsSchema from '../documents/blocks/Container/ContainerPropsSc
 import ContainerReader from '../documents/blocks/Container/ContainerReader.js';
 import EmailLayoutPropsSchema from '../documents/blocks/EmailLayout/EmailLayoutPropsSchema.js';
 import EmailLayoutReader from '../documents/blocks/EmailLayout/EmailLayoutReader.js';
+import AvatarReader from '../documents/blocks/Avatar/AvatarReader.js';
+import ButtonReader from '../documents/blocks/Button/ButtonReader.js';
+import DividerReader from '../documents/blocks/Divider/DividerReader.js';
+import HeadingReader from '../documents/blocks/Heading/HeadingReader.js';
+import HtmlReader from '../documents/blocks/Html/HtmlReader.js';
+import ImageReader from '../documents/blocks/Image/ImageReader.js';
+import SpacerReader from '../documents/blocks/Spacer/SpacerReader.js';
+import TextReader from '../documents/blocks/Text/TextReader.js';
 import SignaturePropsSchema from '../documents/blocks/Signature/SignaturePropsSchema.js';
-import SignatureEditor from '../documents/blocks/Signature/SignatureEditor.js';
+import SignatureReader from '../documents/blocks/Signature/SignatureReader.js';
 import RichTextPropsSchema from '../documents/blocks/RichText/RichTextPropsSchema.js';
 import RichTextReader from '../documents/blocks/RichText/RichTextReader.js';
 
@@ -47,39 +55,39 @@ const READER_DICTIONARY = buildBlockConfigurationDictionary({
   },
   Avatar: {
     schema: AvatarPropsSchema,
-    Component: Avatar,
+    Component: AvatarReader,
   },
   Button: {
     schema: ButtonPropsSchema,
-    Component: Button,
+    Component: ButtonReader,
   },
   Divider: {
     schema: DividerPropsSchema,
-    Component: Divider,
+    Component: DividerReader,
   },
   Heading: {
     schema: HeadingPropsSchema,
-    Component: Heading,
+    Component: HeadingReader,
   },
   Html: {
     schema: HtmlPropsSchema,
-    Component: Html,
+    Component: HtmlReader,
   },
   Image: {
     schema: ImagePropsSchema,
-    Component: Image,
+    Component: ImageReader,
   },
   Spacer: {
     schema: SpacerPropsSchema,
-    Component: Spacer,
+    Component: SpacerReader,
   },
   Text: {
     schema: TextPropsSchema,
-    Component: Text,
+    Component: TextReader,
   },
   Signature: {
     schema: SignaturePropsSchema,
-    Component: SignatureEditor,
+    Component: SignatureReader,
   },
   RichText: {
     schema: RichTextPropsSchema,

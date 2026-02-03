@@ -19,6 +19,12 @@ import TextSidebarPanel from './input-panels/TextSidebarPanel.js';
 import SignatureSidebarPanel from './input-panels/SignatureSidebarPanel.js';
 import RichTextSidebarPanel from './input-panels/RichTextSidebarPanel.js';
 
+/**
+ * Render a compact, dashed-border message box containing the given text.
+ *
+ * @param val - The message string to display
+ * @returns A Material UI Box with dashed border that contains the message text styled as secondary typography
+ */
 function renderMessage(val: string) {
   return (
     <Box sx={{ m: 3, p: 1, border: '1px dashed', borderColor: 'divider' }}>
@@ -27,6 +33,17 @@ function renderMessage(val: string) {
   );
 }
 
+/**
+ * Render a block-specific configuration sidebar for the currently selected editor block.
+ *
+ * This component reads the current document and selected block from editor context and
+ * renders the corresponding sidebar panel for the block's type. If no block is selected
+ * or the selected block cannot be found, a user-facing message is shown. If the block
+ * type is unrecognized, the block's JSON is rendered as a fallback.
+ *
+ * @param apiBaseUrl - Base URL used by panels that perform asset requests (for example Avatar, Image, and Signature panels)
+ * @returns A React element containing the configuration panel for the selected block, a prompt message when no block is selected, or a JSON fallback when the block type is unrecognized
+ */
 export default function ConfigurationPanel({ apiBaseUrl }: { apiBaseUrl: string }) {
   const document = useDocument();
   const selectedBlockId = useSelectedBlockId();

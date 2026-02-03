@@ -3,6 +3,14 @@ import { RichTextProps } from './RichTextPropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
 import { sanitizeRichText } from './sanitizeRichText.js';
 
+/**
+ * Render sanitized rich text into a styled container.
+ *
+ * Applies provided style values (color, backgroundColor, fontFamily — resolved via FONT_FAMILIES when possible, fontSize in pixels, fontWeight, textAlign, and padding as top/right/bottom/left) to the wrapper element.
+ *
+ * @param style - Optional style overrides for the wrapper; padding may be an object with top/right/bottom/left numeric values.
+ * @param props - Rich-text source; `props.html` is used if present, otherwise `props.initial` is used, falling back to an empty string.
+ * @returns A JSX element containing the sanitized HTML with links decorated.
 export default function RichTextReader({ style, props }: RichTextProps) {
   const wrapperStyle: React.CSSProperties = {};
   if (style) {

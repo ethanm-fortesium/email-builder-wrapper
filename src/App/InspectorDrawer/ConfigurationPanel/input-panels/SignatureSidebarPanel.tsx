@@ -9,6 +9,17 @@ import SignaturePropsSchema, { SignatureProps } from '../../../../documents/bloc
 import { resolveApiBaseUrl } from '../../../../utils/resolveApiBaseUrl.js';
 
 type Props = { data: SignatureProps; setData: (v: SignatureProps) => void; apiBaseUrl: string };
+/**
+ * Sidebar panel UI for editing a signature block and its styling.
+ *
+ * Renders inputs for signature fields (name, title, company, contact, address, disclaimer, social links),
+ * optional logo upload/management, and a style editor; validates updates against SignaturePropsSchema before applying them.
+ *
+ * @param data - Current configuration object containing `props` and `style` for the signature block.
+ * @param setData - Setter called with a validated configuration object when the user updates fields or style.
+ * @param apiBaseUrl - Optional base URL used to construct the logo upload endpoint; falls back to the current origin when not provided.
+ * @returns A React element containing the signature configuration sidebar panel.
+ */
 export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Props) {
   const [, setErrors] = useState<ZodError | null>(null);
 

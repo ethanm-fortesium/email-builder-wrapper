@@ -18,6 +18,17 @@ type AvatarSidebarPanelProps = {
   setData: (v: AvatarProps) => void;
   apiBaseUrl: string;
 };
+/**
+ * Sidebar panel for editing an avatar's properties and uploading avatar images.
+ *
+ * Provides controls for size, shape, alt text, and style, validates updates against the AvatarProps schema,
+ * and uploads image files to the Documents API to set the avatar's `imageUrl`.
+ *
+ * @param data - Current avatar data object (props and style).
+ * @param setData - Setter called with validated avatar data to persist changes.
+ * @param apiBaseUrl - Optional API base URL used to resolve the upload endpoint; falls back to the page origin when not provided.
+ * @returns The sidebar panel UI for configuring an Avatar block.
+ */
 export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: AvatarSidebarPanelProps) {
   const [, setErrors] = useState<Zod.ZodError | null>(null);
   const [uploading, setUploading] = useState(false);

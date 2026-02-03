@@ -16,6 +16,14 @@ type StylePropertyPanelProps = {
   value: TStyle;
   onChange: (style: TStyle) => void;
 };
+/**
+ * Render the appropriate input control for a single style property.
+ *
+ * @param name - The key of the style property to render a control for.
+ * @param value - The current style object from which the property's value is read.
+ * @param onChange - Callback invoked with the updated style object when the property's value changes.
+ * @returns The React element for the requested property control, or `undefined` if the property is not supported.
+ */
 export default function SingleStylePropertyPanel({ name, value, onChange }: StylePropertyPanelProps) {
   const defaultValue = value[name] ?? null;
   const handleChange = (v: any) => {

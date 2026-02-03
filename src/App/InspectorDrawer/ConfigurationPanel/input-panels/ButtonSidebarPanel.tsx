@@ -13,6 +13,13 @@ type ButtonSidebarPanelProps = {
   data: ButtonProps;
   setData: (v: ButtonProps) => void;
 };
+/**
+ * Renders a sidebar panel that lets the user edit a Button block's properties (text, URL, width, size, style, colors, and common style properties).
+ *
+ * @param data - Current Button block data and style to populate the form controls
+ * @param setData - Called with updated Button block data after validation
+ * @returns The sidebar panel JSX for editing the Button block
+ */
 export default function ButtonSidebarPanel({ data, setData }: ButtonSidebarPanelProps) {
   const [, setErrors] = useState<ZodError | null>(null);
 

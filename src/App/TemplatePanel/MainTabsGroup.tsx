@@ -5,6 +5,14 @@ import { Tab, Tabs, Tooltip } from '@mui/material';
 
 import { setSelectedMainTab, useReadOnlyMode, useSelectedMainTab } from '../../documents/editor/EditorContext.js';
 
+/**
+ * Render the main editor tabs allowing selection between Editor, Preview, HTML, and JSON views.
+ *
+ * The component reads the current selected tab and read-only mode from editor context.
+ * When not in read-only mode, selecting a tab updates the selected main tab; unknown values default to `'editor'`.
+ *
+ * @returns A Material UI `Tabs` element containing four `Tab` items for the `editor`, `preview`, `html`, and `json` views, each shown with a small icon and tooltip.
+ */
 export default function MainTabsGroup() {
   const selectedMainTab = useSelectedMainTab();
   const readOnly = useReadOnlyMode();

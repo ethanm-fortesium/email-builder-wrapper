@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 
 import { TEditorBlock } from '../../../../editor/core.js';
-import type { EmailBuilderDefaults } from '../../../../editor/EditorContext.js';
+import { getApiBaseUrl, type EmailBuilderDefaults } from '../../../../editor/EditorContext.js';
 
 import sampleImage from '../../../../../assets/512px.png';
 import sampleAvatar from '../../../../../assets/round-avatar.png';
@@ -37,9 +37,6 @@ const FALLBACK_SIGNATURE_PROPS = {
   website: 'https://www.fortesium.co.uk',
   phone: '(020) 3397 3712',
   social: { linkedIn: 'https://linkedin.com/company/fortesium', twitter: 'https://x.com/FortesiumUK' },
-  // No default logoUrl — Vite would inline a bundled image as a data URI here, which Gmail/Outlook
-  // strip from <img src>. Users add a hosted URL via the inspector or save it as part of their default.
-  logoUrl: null as string | null,
 };
 
 export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps[] {
@@ -47,6 +44,9 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
   // so that changing the layout slider visibly updates everything that hasn't been individually overridden.
   const fontFamily = defaults?.fontFamilyKey ?? FALLBACK_FONT_FAMILY;
   const savedSignature = defaults?.signature ?? null;
+
+  const apiBase = getApiBaseUrl();
+  const fallbackLogoUrl = apiBase ? `${apiBase}/Content/email-builder/logo.png` : null;
 
   return [
     {
@@ -200,7 +200,7 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
             fontWeight: 400,
             ...(savedSignature?.style ?? {}),
           },
-          props: savedSignature?.props ?? FALLBACK_SIGNATURE_PROPS,
+          props: savedSignature?.props ?? { ...FALLBACK_SIGNATURE_PROPS, logoUrl: fallbackLogoUrl },
         },
       }),
     },

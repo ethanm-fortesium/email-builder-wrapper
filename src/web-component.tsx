@@ -308,8 +308,11 @@ class EmailBuilderEditor extends HTMLElement {
       root: {
         type: 'EmailLayout',
         data: {
-          backdropColor: '#F5F5F5',
-          canvasColor: '#FFFFFF',
+          backdropColor: defaults?.backdropColor ?? '#F5F5F5',
+          canvasColor: defaults?.canvasColor ?? '#FFFFFF',
+          borderColor: defaults?.borderColor ?? null,
+          borderRadius: defaults?.borderRadius ?? 0,
+          canvasWidth: defaults?.canvasWidth ?? 600,
           textColor: defaults?.textColor ?? '#262626',
           fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
           baseFontSize: defaults?.fontSizePx ?? 16,
@@ -347,8 +350,11 @@ class EmailBuilderEditor extends HTMLElement {
       root: {
         type: 'EmailLayout',
         data: {
-          backdropColor: '#F5F5F5',
-          canvasColor: '#FFFFFF',
+          backdropColor: defaults?.backdropColor ?? '#F5F5F5',
+          canvasColor: defaults?.canvasColor ?? '#FFFFFF',
+          borderColor: defaults?.borderColor ?? null,
+          borderRadius: defaults?.borderRadius ?? 0,
+          canvasWidth: defaults?.canvasWidth ?? 600,
           textColor: defaults?.textColor ?? '#262626',
           fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
           baseFontSize: defaults?.fontSizePx ?? 16,

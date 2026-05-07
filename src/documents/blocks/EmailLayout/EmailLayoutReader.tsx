@@ -6,6 +6,11 @@ import { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
 import { EmailLayoutContext } from './EmailLayoutContext.js';
 import { clampCanvasWidth, getFontFamily } from './emailLayoutShared.js';
 
+/**
+ * Produce a CSS border string using the provided border color.
+ *
+ * @returns The string "`1px solid {color}`" when `borderColor` is provided, `undefined` otherwise.
+ */
 function getBorder({ borderColor }: EmailLayoutProps) {
   if (!borderColor) {
     return undefined;
@@ -13,6 +18,15 @@ function getBorder({ borderColor }: EmailLayoutProps) {
   return `1px solid ${borderColor}`;
 }
 
+/**
+ * Render a reader-facing email layout as a responsive table structure using the provided layout props.
+ *
+ * Renders a full-width outer table (backdrop) that centers an inner "canvas" table sized to a clamped canvasWidth.
+ * The canvas applies background, border, and radius from props and provides `canvasWidth` to descendants via EmailLayoutContext.
+ *
+ * @param props - Configuration for the email layout (canvas and backdrop colors, text/font settings, border/radius, and child block IDs).
+ * @returns The table-based React element representing the composed email layout ready for reader rendering.
+ */
 export default function EmailLayoutReader(props: EmailLayoutProps) {
   const childrenIds = props.childrenIds ?? [];
   const effectiveCanvasWidth = clampCanvasWidth(props.canvasWidth);

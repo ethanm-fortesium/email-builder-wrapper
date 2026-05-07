@@ -1,7 +1,11 @@
 /**
- * Stable-key JSON serialisation: object keys are sorted, undefined values omitted,
+ * Stable-key JSON serialisation: object keys are sorted, null/undefined values omitted,
  * arrays preserved in order. Two values produce the same string iff they are
- * structurally equal modulo key order and absent-vs-undefined fields.
+ * structurally equal modulo key order and absent / null / undefined fields.
+ *
+ * Treating null and undefined identically matters for the "matches default" indicator —
+ * saved JSON round-trips through DB / network and freely converts undefined → missing → null
+ * depending on the path; a strict null vs missing distinction would produce false negatives.
  *
  * Suitable for cheap deep-equality checks on small block-shaped objects (signature
  * props/style, layout font/size/colour). Not safe for cyclic graphs.
@@ -24,7 +28,7 @@ function canonicalise(value: unknown): unknown {
   const out: Record<string, unknown> = {};
   for (const k of sortedKeys) {
     const v = obj[k];
-    if (v === undefined) continue;
+    if (v === undefined || v === null) continue;
     out[k] = canonicalise(v);
   }
   return out;

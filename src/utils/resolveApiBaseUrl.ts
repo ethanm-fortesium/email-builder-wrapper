@@ -23,9 +23,9 @@ export const resolveApiBaseUrl = (rawValue: string | null | undefined): string =
       return fallbackOrigin;
     }
 
-  const trimmedInput = typeof rawValue === 'string' ? rawValue.trim() : '';
-  const pathPortion = trimmedInput.split(/[?#]/)[0] ?? '';
-  const hasExplicitTrailingSlash = pathPortion.endsWith('/') && pathPortion.length > 0;
+    const trimmedInput = typeof rawValue === 'string' ? rawValue.trim() : '';
+    const pathPortion = trimmedInput.split(/[?#]/)[0] ?? '';
+    const hasExplicitTrailingSlash = pathPortion.endsWith('/') && pathPortion.length > 0;
     let pathname = candidate.pathname;
 
     if (!hasExplicitTrailingSlash) {

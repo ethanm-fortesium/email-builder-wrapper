@@ -21,6 +21,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
   const canvasBackground = props.canvasColor ?? '#FFFFFF';
   const textColor = props.textColor ?? '#262626';
   const fontFamily = getFontFamily(props.fontFamily);
+  const baseFontSize = props.baseFontSize ?? 16;
   const canvasBorder = getBorder(props);
   const canvasBorderAttr = canvasBorder ? 1 : 0;
   const canvasBorderColor = props.borderColor ?? undefined;
@@ -50,7 +51,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
               margin: 0,
               color: textColor,
               fontFamily,
-              fontSize: '16px',
+              fontSize: `${baseFontSize}px`,
               fontWeight: 400,
               letterSpacing: '0.15008px',
               lineHeight: '1.5',
@@ -67,6 +68,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
                 margin: 0,
                 width: '100%',
                 maxWidth: `${effectiveCanvasWidth}px`,
+                tableLayout: 'fixed',
                 backgroundColor: canvasBackground,
                 borderRadius: canvasRadius,
                 border: canvasBorder,
@@ -76,7 +78,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
             >
               <tbody>
                 <tr>
-                  <td style={{ padding: 0 }}>
+                  <td style={{ padding: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                     <EmailLayoutContext.Provider value={{ canvasWidth: effectiveCanvasWidth }}>
                       {childrenIds.map((childId) => (
                         <ReaderBlock key={childId} id={childId} />

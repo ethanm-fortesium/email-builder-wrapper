@@ -106,7 +106,7 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     const resolvedFontFamily = resolveFontFamily(style?.fontFamily ?? undefined) ?? 'Helvetica, Arial, sans-serif';
     const fontSize = style?.fontSize ?? 16;
     const fontWeight = style?.fontWeight ?? 'bold';
-    const lineHeightPx = Math.max(fontSize, Math.round(fontSize * 1.05));
+    const lineHeightPx = Math.max(fontSize, Math.round(fontSize * 0.95));
     const trimmedText = text.replace(/\s+/g, ' ').trim();
     const textLengthForEstimate = trimmedText.length > 0 ? trimmedText.length : text.length;
     const characterWidthEstimate = fontSize * 0.7;
@@ -118,24 +118,14 @@ export default function ButtonReader({ style, props }: ButtonProps) {
         fontSize + paddingInline * 2 + 36,
         110,
     );
-    const vmlPaddingInline = Math.max(Math.floor(paddingInline * 0.4), 4);
-    const vmlHorizontalPadding = vmlPaddingInline * 2;
-    const vmlWidthBuffer = Math.max(Math.round(fontSize * 0.45), 8);
-    const vmlApproximateWidth = Math.max(
-        baseTextWidth + vmlHorizontalPadding + vmlWidthBuffer,
-        fontSize + vmlHorizontalPadding + 28,
-        96,
-    );
-    const vmlPaddingBottom = Math.max(Math.floor(paddingBlock * 0.1), 1);
-    const vmlPaddingTop = Math.max(Math.round(paddingBlock * 0.85), 2);
-    const vmlVerticalPadding = vmlPaddingTop + vmlPaddingBottom;
+    const minimumButtonWidth = Math.max(approximateWidth, 96);
     const borderRadius = getRadiusPx(buttonStyle);
     const msoCanvasWidth = canvasWidth >= 750 ? 900 : 600;
-    const vmlEffectiveWidth = fullWidth ? msoCanvasWidth : vmlApproximateWidth;
-    const vmlHeight = lineHeightPx + vmlVerticalPadding;
-    const cornerBasis = Math.max(1, Math.min(vmlEffectiveWidth ?? Number.POSITIVE_INFINITY, vmlHeight));
-    const arcSizePercent = `${Math.round(Math.min(1, borderRadius > 0 ? (borderRadius * 2) / cornerBasis : getArcSize(buttonStyle, borderRadius, vmlHeight)) * 100)}%`;
-    const vmlWidthStyle = `width:${fullWidth ? msoCanvasWidth : vmlApproximateWidth}px;`;
+    const vmlWidth = fullWidth ? msoCanvasWidth : minimumButtonWidth;
+    const vmlHeight = lineHeightPx + paddingBlock * 2;
+    const cornerBasis = Math.max(1, Math.min(vmlWidth, vmlHeight));
+    const arcSizePercent = `${Math.round(getArcSize(buttonStyle, borderRadius, cornerBasis) * 100)}%`;
+    const vmlWidthStyle = `width:${vmlWidth}px;`;
     const vmlHeightStyle = `height:${vmlHeight}px;`;
 
     const anchorStyle: Record<string, string> = {
@@ -157,7 +147,7 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     if (fullWidth) {
         anchorStyle.width = '100%';
     } else {
-        anchorStyle.minWidth = `${Math.max(approximateWidth - Math.round(fontSize * 0.25), 96)}px`;
+        anchorStyle.minWidth = `${minimumButtonWidth}px`;
     }
 
     if (borderRadius) {
@@ -167,11 +157,11 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     const anchorStyleString = styleObjectToString(anchorStyle);
 
     // Outlook-only VML markup preserves rounded corners and padding inside the button.
-    const vmlTextboxStyle = `mso-fit-shape-to-text:true;`;
-    const vmlTableCellStyle = `padding:${vmlPaddingTop}px ${vmlPaddingInline}px ${vmlPaddingBottom}px ${vmlPaddingInline}px;text-align:${alignment};color:${buttonTextColor};font-family:${resolvedFontFamily};font-size:${fontSize}px;font-weight:${fontWeight};mso-line-height-rule:exactly;line-height:${lineHeightPx}px;`;
+        const vmlTextboxStyle = `mso-fit-shape-to-text:true;`;
+        const vmlTableCellStyle = `padding:${paddingBlock}px ${paddingInline}px;text-align:${alignment};color:${buttonTextColor};font-family:${resolvedFontFamily};font-size:${fontSize}px;font-weight:${fontWeight};mso-line-height-rule:exactly;line-height:${lineHeightPx}px;`;
     const vmlTableWidthAttr = fullWidth ? ' width="100%"' : '';
-    const vmlTableStyle = fullWidth ? 'width:100%;' : '';
-    const vmlShapeStyle = `${vmlWidthStyle}${vmlHeightStyle}v-text-anchor:middle;mso-fit-shape-to-text:true;`;
+        const vmlTableStyle = fullWidth ? 'width:100%;' : '';
+        const vmlShapeStyle = `${vmlWidthStyle}${vmlHeightStyle}v-text-anchor:middle;mso-fit-shape-to-text:true;`;
 
     const vmlMarkup = `<!--[if mso]>
   <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${escapeHtml(href)}" style="${escapeHtml(vmlShapeStyle)}" arcsize="${arcSizePercent}" fillcolor="${escapeHtml(buttonBackgroundColor)}" stroke="f">
@@ -198,8 +188,9 @@ export default function ButtonReader({ style, props }: ButtonProps) {
         padding: 0,
     };
 
+    const fallbackSpanStyle = fullWidth ? 'display:block;width:100%;' : 'display:inline-block;';
     const fallbackMarkup = `<!--[if !mso]><!-->
-   <span style="display:inline-block;${fullWidth ? 'width:100%;' : ''}">
+   <span style="${fallbackSpanStyle}">
     <a href="${escapeHtml(href)}" 
         target="_blank" 
         rel="noopener noreferrer" 

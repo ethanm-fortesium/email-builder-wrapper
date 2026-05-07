@@ -67,6 +67,8 @@ export function EmailTable({
   const cellStyle: React.CSSProperties = {
     padding: formatPadding(padding),
     backgroundColor: backgroundColor ?? undefined,
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
   };
 
   if (extraCellStyle) {

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import DOMPurify from 'dompurify';
 
 // Import existing App + theme 
 import App from './App/index.js';
@@ -15,6 +16,13 @@ import {
   getEditorState,
   setSelectedMainTab,
   setInspectorDrawerOpen,
+  setDefaults,
+  getDefaults,
+  setHostEventDispatcher,
+  setApiBaseUrl,
+  showToast,
+  EmailBuilderDefaults,
+  ToastSeverity,
 } from './documents/editor/EditorContext.js';
 import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 
@@ -32,8 +40,13 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
   const latestDocRef = useRef<any>(document);
   const resolvedApiBaseUrl = useMemo(() => resolveApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
 
+  setApiBaseUrl(resolvedApiBaseUrl);
+
   // Compute HTML whenever document changes
-  const html = useMemo(() => renderToStaticMarkup(document, { rootBlockId: 'root' }), [document]);
+  const html = useMemo(
+    () => renderToStaticMarkup(document, { rootBlockId: 'root' }),
+    [document, resolvedApiBaseUrl]
+  );
 
   // Keep reference for public methods
   useEffect(() => {
@@ -48,8 +61,11 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
     );
   }, [document, html, host]);
 
-  // Ready event (first mount)
+  // Ready event (first mount) + register host event dispatcher
   useEffect(() => {
+    setHostEventDispatcher((name, detail) => {
+      host.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+    });
     host.dispatchEvent(
       new CustomEvent('emailBuilderReady', {
         detail: {},
@@ -57,7 +73,8 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
         composed: true,
       })
     );
-  }, []);
+    return () => setHostEventDispatcher(null);
+  }, [host]);
 
   return (
     <>
@@ -90,12 +107,20 @@ class EmailBuilderEditor extends HTMLElement {
   public __isProgrammatic() { return this._isProgrammaticImport; }
 
   static get observedAttributes() {
-    return ['readonly'];
+    return ['readonly', 'defaults'];
   }
 
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
     if (name === 'readonly' && !this._attributeSync) {
       this.__applyReadOnly(newValue !== null);
+    }
+    if (name === 'defaults' && newValue) {
+      try {
+        const parsed = JSON.parse(newValue);
+        this.setDefaults(parsed);
+      } catch (e) {
+        console.warn('[EmailBuilder] invalid defaults attribute', e);
+      }
     }
   }
 
@@ -125,6 +150,15 @@ class EmailBuilderEditor extends HTMLElement {
 
     if (this.hasAttribute('readonly')) {
       this.__applyReadOnly(true);
+    }
+
+    const defaultsAttr = this.getAttribute('defaults');
+    if (defaultsAttr) {
+      try {
+        this.setDefaults(JSON.parse(defaultsAttr));
+      } catch (e) {
+        console.warn('[EmailBuilder] invalid defaults attribute', e);
+      }
     }
 
     queueMicrotask(() => {
@@ -162,6 +196,27 @@ class EmailBuilderEditor extends HTMLElement {
 
   public setReadOnlyMode(readOnly: boolean) {
     this.__applyReadOnly(readOnly);
+  }
+
+  /**
+   * Apply client-wide defaults (font, font size, signature, logo) used to seed NEW blocks
+   * and the EmailLayout for fresh emails. Existing documents are not mutated.
+   */
+  public setDefaults(defaults: EmailBuilderDefaults | null) {
+    setDefaults(defaults ?? null);
+  }
+
+  public getDefaults(): EmailBuilderDefaults | null {
+    return getDefaults();
+  }
+
+  /**
+   * Show a transient toast inside the editor surface. Severity drives the colour
+   * (success = green, error = red, warning = amber, info = blue). Auto-dismisses.
+   */
+  public showToast(message: string, severity: ToastSeverity = 'info') {
+    if (!message) return;
+    showToast(message, severity);
   }
 
   public toggleReadOnlyMode() {
@@ -248,14 +303,16 @@ class EmailBuilderEditor extends HTMLElement {
   private __applyHtml(htmlContent: string) {
     // Create stable ids so future successive imports fully replace
     const htmlBlockId = 'block-imported-html';
+    const defaults = getDefaults();
     const newDocument = {
       root: {
         type: 'EmailLayout',
         data: {
           backdropColor: '#F5F5F5',
           canvasColor: '#FFFFFF',
-          textColor: '#262626',
-          fontFamily: 'MODERN_SANS',
+          textColor: defaults?.textColor ?? '#262626',
+          fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
+          baseFontSize: defaults?.fontSizePx ?? 16,
           childrenIds: [htmlBlockId],
         },
       },
@@ -285,14 +342,16 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   private __buildEmptyDocument() {
+    const defaults = getDefaults();
     return {
       root: {
         type: 'EmailLayout',
         data: {
           backdropColor: '#F5F5F5',
           canvasColor: '#FFFFFF',
-          textColor: '#262626',
-          fontFamily: 'MODERN_SANS',
+          textColor: defaults?.textColor ?? '#262626',
+          fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
+          baseFontSize: defaults?.fontSizePx ?? 16,
           childrenIds: [],
         },
       },
@@ -305,6 +364,11 @@ class EmailBuilderEditor extends HTMLElement {
       return '';
     }
 
+    const sanitized = DOMPurify.sanitize(htmlContent, {
+      ADD_TAGS: ['style'],
+      ADD_ATTR: ['style'],
+    });
+
     const styles: string[] = [];
 
     const captureStyles = (source: string | null | undefined) => {
@@ -315,11 +379,11 @@ class EmailBuilderEditor extends HTMLElement {
       }
     };
 
-    const headMatch = htmlContent.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+    const headMatch = sanitized.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
     captureStyles(headMatch?.[1]);
 
-    const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    let working = bodyMatch ? bodyMatch[1] : htmlContent;
+    const bodyMatch = sanitized.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    let working = bodyMatch ? bodyMatch[1] : sanitized;
 
     captureStyles(working);
     working = working.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');

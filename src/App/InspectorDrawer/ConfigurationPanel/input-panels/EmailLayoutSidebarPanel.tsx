@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { ZodError } from 'zod';
 
-import { RoundedCornerOutlined } from '@mui/icons-material';
+import { RoundedCornerOutlined, Star, StarBorderOutlined } from '@mui/icons-material';
 
 import EmailLayoutPropsSchema, {
   EmailLayoutProps,
 } from '../../../../documents/blocks/EmailLayout/EmailLayoutPropsSchema.js';
+import { dispatchHostEvent, useDefaults } from '../../../../documents/editor/EditorContext.js';
+import { stableEqual } from '../../../../utils/stableEqual.js';
 
 import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import ColorInput, { NullableColorInput } from './helpers/inputs/ColorInput/index.js';
+import FontSizeInput from './helpers/inputs/FontSizeInput.js';
 import { NullableFontFamily } from './helpers/inputs/FontFamily.js';
 import SliderInput from './helpers/inputs/SliderInput.js';
 import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
-import { ToggleButton } from '@mui/material';
+import { Button, ToggleButton } from '@mui/material';
 
 type EmailLayoutSidebarFieldsProps = {
   data: EmailLayoutProps;
@@ -22,16 +25,16 @@ type EmailLayoutSidebarFieldsProps = {
  * Renders the "Global" sidebar fields for editing email layout properties and propagates validated updates.
  *
  * The component presents controls for backdrop colour, canvas colour, optional canvas border colour,
- * canvas border radius, canvas width, font family, and text colour. When a control changes, the
- * new layout object is validated; valid updates are passed to `setData`, and validation errors are
+ * canvas border radius, canvas width, font family, base font size, and text colour. When a control changes,
+ * the new layout object is validated; valid updates are passed to `setData`, and validation errors are
  * stored in component state.
  *
- * @param data - Current email layout properties displayed by the controls
- * @param setData - Callback invoked with validated email layout properties when an update succeeds
- * @returns The sidebar panel containing inputs for global email layout settings
+ * Inputs prepopulate from the saved client-wide defaults when the email's own data has no value for that
+ * field — covering older emails that pre-date the defaults feature.
  */
 export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutSidebarFieldsProps) {
   const [, setErrors] = useState<ZodError | null>(null);
+  const defaults = useDefaults();
 
   const updateData = (d: unknown) => {
     const res = EmailLayoutPropsSchema.safeParse(d);
@@ -42,6 +45,26 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
       setErrors(res.error);
     }
   };
+
+  const effectiveFontFamily = data.fontFamily ?? defaults?.fontFamilyKey ?? 'MODERN_SANS';
+  const effectiveBaseFontSize = data.baseFontSize ?? defaults?.fontSizePx ?? 16;
+  const effectiveTextColor = data.textColor ?? defaults?.textColor ?? '#262626';
+
+  const matchesSavedLayoutDefault =
+    !!defaults &&
+    (defaults.fontFamilyKey != null || defaults.fontSizePx != null || defaults.textColor != null) &&
+    stableEqual(
+      {
+        fontFamilyKey: data.fontFamily ?? null,
+        fontSizePx: data.baseFontSize ?? null,
+        textColor: data.textColor ?? null,
+      },
+      {
+        fontFamilyKey: defaults.fontFamilyKey ?? null,
+        fontSizePx: defaults.fontSizePx ?? null,
+        textColor: defaults.textColor ?? null,
+      }
+    );
 
   return (
     <BaseSidebarPanel title="Global">
@@ -84,15 +107,56 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
       </RadioGroupInput>
       <NullableFontFamily
         label="Font family"
-        defaultValue={data.fontFamily ?? "MODERN_SANS"}
+        defaultValue={effectiveFontFamily}
         onChange={(fontFamily) => updateData({ ...data, fontFamily })}
+      />
+      <FontSizeInput
+        label="Base font size"
+        defaultValue={effectiveBaseFontSize}
+        onChange={(baseFontSize) => updateData({ ...data, baseFontSize })}
       />
       <ColorInput
         label="Text colour"
-        defaultValue={data.textColor ?? '#262626'}
+        defaultValue={effectiveTextColor}
         onChange={(textColor) => updateData({ ...data, textColor })}
       />
-      
+      <Button
+        size="small"
+        variant="outlined"
+        color={matchesSavedLayoutDefault ? 'warning' : 'primary'}
+        disabled={matchesSavedLayoutDefault}
+        sx={
+          matchesSavedLayoutDefault
+            ? {
+                '&.Mui-disabled': {
+                  borderColor: 'warning.main',
+                  color: 'warning.main',
+                  opacity: 1,
+                },
+              }
+            : undefined
+        }
+        startIcon={
+          matchesSavedLayoutDefault ? (
+            <Star sx={{ color: 'warning.main' }} />
+          ) : (
+            <StarBorderOutlined />
+          )
+        }
+        onClick={() => {
+          dispatchHostEvent('emailBuilderSaveAsDefault', {
+            scope: 'layout',
+            layout: {
+              fontFamilyKey: data.fontFamily ?? null,
+              fontSizePx: data.baseFontSize ?? null,
+              textColor: data.textColor ?? null,
+            },
+          });
+        }}
+      >
+        {matchesSavedLayoutDefault ? 'Layout matches default' : 'Save layout as default'}
+      </Button>
+
     </BaseSidebarPanel>
   );
 }

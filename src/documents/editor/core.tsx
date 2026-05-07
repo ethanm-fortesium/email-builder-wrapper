@@ -72,7 +72,9 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
     schema: HtmlPropsSchema,
     Component: (props) => (
       <EditorBlockWrapper>
-        <Html {...props} />
+        <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
+          <Html {...props} />
+        </div>
       </EditorBlockWrapper>
     ),
   },

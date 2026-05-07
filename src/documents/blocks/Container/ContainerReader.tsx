@@ -29,7 +29,7 @@ export default function ContainerReader({ style, props }: ContainerProps) {
       <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={{ borderCollapse: 'collapse' }}>
         <tbody>
           <tr>
-            <td style={{ padding: 0 }}>
+            <td style={{ padding: 0, backgroundColor: backgroundColor ?? undefined }} {...(backgroundColor ? { bgColor: backgroundColor } : undefined)}>
               {childrenIds.map((childId) => (
                 <ReaderBlock key={childId} id={childId} />
               ))}

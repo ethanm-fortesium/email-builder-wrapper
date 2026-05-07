@@ -37,7 +37,8 @@ export default function ColumnsContainerReader({ style, props }: ColumnsContaine
               const children = column?.childrenIds ?? [];
               const paddingLeft = getPaddingBefore(index, columnsGap, columnsCount);
               const paddingRight = getPaddingAfter(index, columnsGap, columnsCount);
-              const width = fixedWidths ? fixedWidths[index] ?? undefined : undefined;
+              const rawWidth = fixedWidths ? fixedWidths[index] ?? undefined : undefined;
+              const adjustedWidth = rawWidth ? rawWidth - paddingLeft - paddingRight : undefined;
 
               return (
                 <td
@@ -48,10 +49,11 @@ export default function ColumnsContainerReader({ style, props }: ColumnsContaine
                     paddingBottom: 0,
                     paddingLeft,
                     paddingRight,
-                    width: width ? `${width}px` : undefined,
-                    boxSizing: 'border-box',
+                    width: adjustedWidth ? `${adjustedWidth}px` : undefined,
+                    backgroundColor: backgroundColor ?? undefined,
                   }}
-                  width={width ?? undefined}
+                  width={adjustedWidth ?? undefined}
+                  {...(backgroundColor ? { bgColor: backgroundColor } : undefined)}
                 >
                   {children.map((childId) => (
                     <ReaderBlock key={childId} id={childId} />

@@ -55,18 +55,21 @@ export default function renderToStaticMarkup(document: TReaderDocument, { rootBl
 
   const bodyStyle = `margin:0;padding:0;background-color:${layout.backdropColor};`;
   const wrapperStyle = `background-color:${layout.backdropColor};margin:0;padding:0;width:100%;`;
-  const msoTdStyle = `margin:0;padding:0;color:${layout.textColor};font-family:${layout.fontFamily};font-size:16px;line-height:1.5;letter-spacing:0.15008px;`;
+  const msoTdStyle = `margin:0;padding:0;color:${layout.textColor};font-family:${layout.fontFamily};font-size:16px;line-height:1.5;letter-spacing:0.15008px;word-break:break-word;overflow-wrap:break-word;`;
+
+  function escapeAttr(value: string | number): string {
+    return String(value).replace(/"/g, '&quot;');
+  }
 
   const dataAttributes: string[] = [
-    `data-email-backdrop="${layout.backdropColor}"`,
-    `data-email-canvas-bg="${layout.canvasColor}"`,
-    `data-email-canvas-width="${layout.canvasWidth}"`,
-    `data-email-border-radius="${layout.borderRadius}"`,
+    `data-email-backdrop="${escapeAttr(layout.backdropColor)}"`,
+    `data-email-canvas-bg="${escapeAttr(layout.canvasColor)}"`,
+    `data-email-canvas-width="${escapeAttr(layout.canvasWidth)}"`,
+    `data-email-border-radius="${escapeAttr(layout.borderRadius)}"`,
   ];
   if (layout.borderColor) {
-    dataAttributes.push(`data-email-border-color="${layout.borderColor}"`);
-  }
-  const dataAttributeString = dataAttributes.length > 0 ? `${dataAttributes.join(' ')} ` : '';
+    dataAttributes.push(`data-email-border-color="${escapeAttr(layout.borderColor)}"`);
+  } const dataAttributeString = dataAttributes.length > 0 ? `${dataAttributes.join(' ')} ` : '';
 
   const msoWrapperOpen = `<!--[if mso]><div class="mso-email-body" ${dataAttributeString}style="${wrapperStyle}"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${layout.backdropColor}" style="background-color:${layout.backdropColor};margin:0;"><tbody><tr><td align="center" valign="top" style="${msoTdStyle}"><![endif]-->`;
   const msoWrapperClose = '<!--[if mso]></td></tr></tbody></table></div><![endif]-->';

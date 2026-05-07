@@ -273,7 +273,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - Use optimised images (compress before upload)
 - Always provide descriptive alt text
 - Specify dimensions for consistent rendering
-- Max recommended width: 600px
+- Max recommended width: 300px
 
 ---
 
@@ -410,7 +410,7 @@ The Rich Text Editor provides a toolbar with:
 **Block Styles:**
 - **Font family** - Typeface selection
 - **Font size** - Text size in px
-- **Text colour** - Text color
+- **Text colour** - Text colour
 - **Background colour** - Block background
 - **Text alignment** - Left/centre/right
 

@@ -446,7 +446,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                 <div ref={containerRef} />
             </Box>
             <MultiStylePropertyPanel
-                names={['color', 'backgroundColor', 'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'padding']}
+                names={['color', 'backgroundColor', 'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'lineHeight', 'padding']}
                 value={data.style}
                 onChange={(style) => updateData({ ...data, style })}
             />    

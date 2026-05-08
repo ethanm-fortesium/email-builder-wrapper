@@ -27,8 +27,6 @@ type TButtonProps = {
   block: () => TEditorBlock;
 };
 
-const FALLBACK_FONT_FAMILY = 'MODERN_SANS';
-
 const FALLBACK_SIGNATURE_PROPS = {
   fullName: 'Jane Doe',
   title: 'Account Executive',
@@ -40,9 +38,9 @@ const FALLBACK_SIGNATURE_PROPS = {
 };
 
 export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps[] {
-  // fontSize is intentionally NOT applied per-block; new blocks inherit from EmailLayout's baseFontSize
-  // so that changing the layout slider visibly updates everything that hasn't been individually overridden.
-  const fontFamily = defaults?.fontFamilyKey ?? FALLBACK_FONT_FAMILY;
+  // Neither fontSize nor fontFamily is applied per-block — new blocks inherit both from
+  // EmailLayout (baseFontSize / fontFamily) so that changing the layout in the Global panel
+  // visibly updates everything that hasn't been individually overridden via the inspector.
   const savedSignature = defaults?.signature ?? null;
 
   const apiBase = getApiBaseUrl();
@@ -56,10 +54,9 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
         type: 'Heading',
         data: {
           props: { text: 'Hello friend' },
-          // Heading sizes are driven by level (h1/h2/h3); only fontFamily flows from defaults.
+          // No explicit fontFamily — inherits from EmailLayout. Heading sizes are driven by level (h1/h2/h3).
           style: {
             padding: { top: 16, bottom: 16, left: 24, right: 24 },
-            fontFamily: fontFamily as any,
           },
         },
       }),
@@ -71,10 +68,9 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
         type: 'Text',
         data: {
           props: { text: 'My new text block' },
-          // No explicit fontSize — block inherits EmailLayout baseFontSize so the layout slider actually works.
+          // No explicit fontSize / fontFamily — inherits from EmailLayout so global panel changes propagate.
           style: {
             padding: { top: 16, bottom: 16, left: 24, right: 24 },
-            fontFamily: fontFamily as any,
             fontWeight: 'normal',
           },
         },
@@ -192,11 +188,10 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
       block: () => ({
         type: 'Signature',
         data: {
-          // No explicit fontSize on the wrapper — inherits from EmailLayout baseFontSize.
-          // Saved signature styles can still set fontSize and will win via the spread below.
+          // No explicit fontSize / fontFamily on the wrapper — inherits from EmailLayout.
+          // Saved signature styles can still set them and will win via the spread below.
           style: {
             padding: { top: 16, bottom: 24, left: 24, right: 24 },
-            fontFamily,
             fontWeight: 400,
             ...(savedSignature?.style ?? {}),
           },
@@ -211,8 +206,8 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
         type: 'RichText',
         data: {
           props: { html: '<p>This is a <strong>rich text</strong> block. You can edit <em>font styles</em>, <u>links</u>, and more!</p>' },
-          // No explicit fontSize — inherit from EmailLayout baseFontSize.
-          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 }, fontFamily },
+          // No explicit fontSize / fontFamily — inherits from EmailLayout.
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
         },
       }),
     },

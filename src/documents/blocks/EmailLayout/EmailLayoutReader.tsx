@@ -37,8 +37,6 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
   const fontFamily = getFontFamily(props.fontFamily);
   const baseFontSize = props.baseFontSize ?? 16;
   const canvasBorder = getBorder(props);
-  const canvasBorderAttr = canvasBorder ? 1 : 0;
-  const canvasBorderColor = props.borderColor ?? undefined;
   const canvasRadius = props.borderRadius ?? undefined;
 
   return (
@@ -75,7 +73,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
               role="presentation"
               cellPadding={0}
               cellSpacing={0}
-              border={canvasBorderAttr}
+              border={0}
               width={effectiveCanvasWidth}
               bgColor={canvasBackground}
               style={{
@@ -86,9 +84,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
                 backgroundColor: canvasBackground,
                 borderRadius: canvasRadius,
                 border: canvasBorder,
-                borderColor: canvasBorderColor,
               }}
-              {...(canvasBorderColor ? { borderColor: canvasBorderColor } : {})}
             >
               <tbody>
                 <tr>

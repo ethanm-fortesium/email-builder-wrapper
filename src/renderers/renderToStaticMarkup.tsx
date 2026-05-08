@@ -71,13 +71,13 @@ export default function renderToStaticMarkup(document: TReaderDocument, { rootBl
   const bodyContent = baseRenderToStaticMarkup(<Reader document={document} rootBlockId={rootBlockId} />);
   const layout = getLayoutAppearance(document, rootBlockId);
 
-  const bodyStyle = `margin:0;padding:0;background-color:${layout.backdropColor};`;
-  const wrapperStyle = `background-color:${layout.backdropColor};margin:0;padding:0;width:100%;`;
-  const msoTdStyle = `margin:0;padding:0;color:${layout.textColor};font-family:${layout.fontFamily};font-size:16px;line-height:1.5;letter-spacing:0.15008px;word-break:break-word;overflow-wrap:break-word;`;
-
   function escapeAttr(value: string | number): string {
-    return String(value).replace(/"/g, '&quot;');
+    return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   }
+
+  const bodyStyle = `margin:0;padding:0;background-color:${escapeAttr(layout.backdropColor)};`;
+  const wrapperStyle = `background-color:${escapeAttr(layout.backdropColor)};margin:0;padding:0;width:100%;`;
+  const msoTdStyle = `margin:0;padding:0;color:${escapeAttr(layout.textColor)};font-family:${escapeAttr(layout.fontFamily)};font-size:16px;line-height:1.5;letter-spacing:0.15008px;word-break:break-word;overflow-wrap:break-word;`;
 
   const dataAttributes: string[] = [
     `data-email-backdrop="${escapeAttr(layout.backdropColor)}"`,
@@ -89,7 +89,7 @@ export default function renderToStaticMarkup(document: TReaderDocument, { rootBl
     dataAttributes.push(`data-email-border-color="${escapeAttr(layout.borderColor)}"`);
   } const dataAttributeString = dataAttributes.length > 0 ? `${dataAttributes.join(' ')} ` : '';
 
-  const msoWrapperOpen = `<!--[if mso]><div class="mso-email-body" ${dataAttributeString}style="${wrapperStyle}"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${layout.backdropColor}" style="background-color:${layout.backdropColor};margin:0;"><tbody><tr><td align="center" valign="top" style="${msoTdStyle}"><![endif]-->`;
+  const msoWrapperOpen = `<!--[if mso]><div class="mso-email-body" ${dataAttributeString}style="${wrapperStyle}"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${escapeAttr(layout.backdropColor)}" style="background-color:${escapeAttr(layout.backdropColor)};margin:0;"><tbody><tr><td align="center" valign="top" style="${msoTdStyle}"><![endif]-->`;
   const msoWrapperClose = '<!--[if mso]></td></tr></tbody></table></div><![endif]-->';
   const modernWrapperOpen = `<!--[if !mso]><!--><div class="modern-email-body" ${dataAttributeString}style="${wrapperStyle}"><!--<![endif]-->`;
   const modernWrapperClose = '<!--[if !mso]><!--></div><!--<![endif]-->';

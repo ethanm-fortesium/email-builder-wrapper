@@ -49,7 +49,7 @@ function withRewrittenChildIds(block: TEditorBlock, mapId: (oldId: string) => st
         ...block.data,
         props: {
           ...(block.data as any).props,
-          columns: cols.map((c) => ({ childrenIds: (c?.childrenIds ?? []).map(mapId) })),
+          columns: cols.map((c) => ({ ...c, childrenIds: (c?.childrenIds ?? []).map(mapId) })),
         },
       },
     } as TEditorBlock;
@@ -88,7 +88,14 @@ export function buildClipboardPayload(blockId: string, document: TEditorConfigur
 export function isClipboardPayload(value: unknown): value is BlockClipboardPayload {
   if (!value || typeof value !== 'object') return false;
   const v = value as Partial<BlockClipboardPayload>;
-  return v.marker === PAYLOAD_MARKER && typeof v.block === 'object' && v.block !== null;
+  return (
+    v.marker === PAYLOAD_MARKER &&
+    typeof v.v === 'number' &&
+    typeof v.block === 'object' &&
+    v.block !== null &&
+    typeof v.descendants === 'object' &&
+    v.descendants !== null
+  );
 }
 
 export function parseClipboardPayload(text: string): BlockClipboardPayload | null {

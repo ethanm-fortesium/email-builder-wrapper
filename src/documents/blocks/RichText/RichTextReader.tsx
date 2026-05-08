@@ -26,9 +26,10 @@ export default function RichTextReader({ style, props }: RichTextProps) {
     fontFamily: resolveFontFamily(style?.fontFamily ?? undefined),
     fontSize: style?.fontSize ? `${style.fontSize}px` : undefined,
     fontWeight: style?.fontWeight ?? undefined,
-    lineHeight: style?.lineHeight ?? undefined,
+    lineHeight: style?.lineHeight ? `${Math.round(style.lineHeight * 100)}%` : undefined,
+    msoLineHeightRule: style?.lineHeight ? 'exactly' : undefined,
     textAlign: style?.textAlign ?? undefined,
-  };
+  } as React.CSSProperties;
 
   return (
     <EmailTable backgroundColor={backgroundColor} padding={cellPadding as any}>

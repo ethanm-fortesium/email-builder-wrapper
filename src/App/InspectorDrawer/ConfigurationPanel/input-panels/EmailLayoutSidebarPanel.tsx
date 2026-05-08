@@ -21,16 +21,14 @@ type EmailLayoutSidebarFieldsProps = {
   data: EmailLayoutProps;
   setData: (v: EmailLayoutProps) => void;
 };
+
 /**
- * Renders the "Global" sidebar fields for editing email layout properties and propagates validated updates.
+ * Renders the Global sidebar fields for editing email layout properties and propagates validated updates.
  *
- * The component presents controls for backdrop colour, canvas colour, optional canvas border colour,
- * canvas border radius, canvas width, font family, base font size, and text colour. When a control changes,
- * the new layout object is validated; valid updates are passed to `setData`, and validation errors are
- * stored in component state.
- *
- * Inputs prepopulate from the saved client-wide defaults when the email's own data has no value for that
- * field — covering older emails that pre-date the defaults feature.
+ * The "Save layout as default" button captures the complete
+ * set of layout fields (font, font size, text colour, canvas width, canvas / backdrop / border colour,
+ * border radius) and dispatches them as a single payload; the matches-default star fills when every
+ * field on this email exactly equals the saved layout default.
  */
 export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutSidebarFieldsProps) {
   const [, setErrors] = useState<ZodError | null>(null);
@@ -46,41 +44,56 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
     }
   };
 
+  const effectiveBackdropColor = data.backdropColor ?? defaults?.backdropColor ?? '#F5F5F5';
+  const effectiveCanvasColor = data.canvasColor ?? defaults?.canvasColor ?? '#FFFFFF';
+  const effectiveBorderColor = data.borderColor ?? defaults?.borderColor ?? null;
+  const effectiveBorderRadius = data.borderRadius ?? defaults?.borderRadius ?? 0;
+  const effectiveCanvasWidth = data.canvasWidth ?? defaults?.canvasWidth ?? 600;
   const effectiveFontFamily = data.fontFamily ?? defaults?.fontFamilyKey ?? 'MODERN_SANS';
   const effectiveBaseFontSize = data.baseFontSize ?? defaults?.fontSizePx ?? 16;
   const effectiveTextColor = data.textColor ?? defaults?.textColor ?? '#262626';
 
-  const matchesSavedLayoutDefault =
-    !!defaults &&
-    (defaults.fontFamilyKey != null || defaults.fontSizePx != null || defaults.textColor != null) &&
-    stableEqual(
-      {
-        fontFamilyKey: data.fontFamily ?? null,
-        fontSizePx: data.baseFontSize ?? null,
-        textColor: data.textColor ?? null,
-      },
-      {
-        fontFamilyKey: defaults.fontFamilyKey ?? null,
-        fontSizePx: defaults.fontSizePx ?? null,
-        textColor: defaults.textColor ?? null,
-      }
-    );
+
+  const currentLayoutSnapshot = {
+    fontFamilyKey: effectiveFontFamily,
+    fontSizePx: effectiveBaseFontSize,
+    textColor: effectiveTextColor,
+    canvasWidth: effectiveCanvasWidth,
+    canvasColor: effectiveCanvasColor,
+    backdropColor: effectiveBackdropColor,
+    borderColor: effectiveBorderColor,
+    borderRadius: effectiveBorderRadius,
+  };
+
+  const savedLayoutSnapshot = {
+    fontFamilyKey: defaults?.fontFamilyKey ?? null,
+    fontSizePx: defaults?.fontSizePx ?? null,
+    textColor: defaults?.textColor ?? null,
+    canvasWidth: defaults?.canvasWidth ?? null,
+    canvasColor: defaults?.canvasColor ?? null,
+    backdropColor: defaults?.backdropColor ?? null,
+    borderColor: defaults?.borderColor ?? null,
+    borderRadius: defaults?.borderRadius ?? null,
+  };
+
+  const hasAnySavedLayoutDefault = Object.values(savedLayoutSnapshot).some((v) => v !== null);
+  const matchesSavedLayoutDefault = hasAnySavedLayoutDefault && stableEqual(currentLayoutSnapshot, savedLayoutSnapshot);
 
   return (
     <BaseSidebarPanel title="Global">
       <ColorInput
         label="Backdrop colour"
-        defaultValue={data.backdropColor ?? '#F5F5F5'}
+        defaultValue={effectiveBackdropColor}
         onChange={(backdropColor) => updateData({ ...data, backdropColor })}
       />
       <ColorInput
         label="Canvas colour"
-        defaultValue={data.canvasColor ?? '#FFFFFF'}
+        defaultValue={effectiveCanvasColor}
         onChange={(canvasColor) => updateData({ ...data, canvasColor })}
       />
       <NullableColorInput
         label="Canvas border colour"
-        defaultValue={data.borderColor ?? null}
+        defaultValue={effectiveBorderColor}
         onChange={(borderColor) => updateData({ ...data, borderColor })}
       />
       <SliderInput
@@ -91,12 +104,12 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         min={0}
         max={48}
         label="Canvas border radius"
-        defaultValue={data.borderRadius ?? 0}
+        defaultValue={effectiveBorderRadius}
         onChange={(borderRadius) => updateData({ ...data, borderRadius })}
       />
       <RadioGroupInput
         label="Canvas width"
-        defaultValue={String(data.canvasWidth ?? 600)}
+        defaultValue={String(effectiveCanvasWidth)}
         onChange={(v) => {
           const canvasWidth = parseInt(v, 10);
           updateData({ ...data, canvasWidth });
@@ -146,11 +159,7 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         onClick={() => {
           dispatchHostEvent('emailBuilderSaveAsDefault', {
             scope: 'layout',
-            layout: {
-              fontFamilyKey: data.fontFamily ?? null,
-              fontSizePx: data.baseFontSize ?? null,
-              textColor: data.textColor ?? null,
-            },
+            layout: currentLayoutSnapshot,
           });
         }}
       >

@@ -8,6 +8,13 @@ export type EmailBuilderDefaults = {
   fontFamilyKey?: string | null;
   fontSizePx?: number | null;
   textColor?: string | null;
+  // Global layout styling — used to seed the EmailLayout root for new emails and to populate
+  // the Global sidebar inputs when an email's own data lacks a value.
+  canvasWidth?: number | null;
+  canvasColor?: string | null;
+  backdropColor?: string | null;
+  borderColor?: string | null;
+  borderRadius?: number | null;
   logoUrl?: string | null;
   signature?: { props?: any; style?: any } | null;
 };

@@ -7,5 +7,6 @@ export type TStyle = {
   fontSize?: any;
   fontWeight?: any;
   padding?: any;
+  lineHeight?: any;
   textAlign?: any;
 };

@@ -21,7 +21,7 @@ import Picker from './helpers/inputs/ColorInput/Picker.js';
 import {
     sanitizeRichTextHtml,
     decorateRichTextListMarkerColorsInPlace,
-} from '../../../../documents/blocks/RichText/sanitizeRichText.js';
+} from '../../../../documents/blocks/RichText/sanitiseRichText.js';
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
 /**
@@ -98,6 +98,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
         if (style?.backgroundColor) root.style.backgroundColor = style.backgroundColor; else root.style.removeProperty('background-color');
         if (resolvedFont) root.style.fontFamily = resolvedFont; else root.style.removeProperty('font-family');
         if (fontSizeValue) root.style.fontSize = fontSizeValue; else root.style.removeProperty('font-size');
+        if (style?.lineHeight) root.style.lineHeight = style.lineHeight; else root.style.removeProperty('line-height');
         if (style?.textAlign) root.style.textAlign = style.textAlign as any; else root.style.removeProperty('text-align');
     };
 
@@ -115,8 +116,25 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
             el.appendChild(editorDiv);
             const quill = new Quill(editorDiv, {
                 theme: 'snow',
-                modules: { toolbar: false },
+                modules: {
+                    toolbar: false,
+                    clipboard: { matchers: [] },
+                },
                 placeholder: 'Start typing…',
+            });
+            // Normalize non-breaking spaces on paste so &nbsp; from Word/Outlook
+            // doesn't prevent word-wrapping in the stored HTML. Only replaces
+            // isolated &nbsp; between non-space chars; preserves consecutive
+            // &nbsp; used for intentional spacing.
+            quill.clipboard.addMatcher(Node.TEXT_NODE, (node: any, delta: any) => {
+                if (typeof node.data === 'string' && node.data.includes('\u00A0')) {
+                    delta.ops = delta.ops.map((op: any) =>
+                        typeof op.insert === 'string'
+                            ? { ...op, insert: op.insert.replace(/(?<=\S)\u00A0(?=\S)/g, ' ') }
+                            : op
+                    );
+                }
+                return delta;
             });
             editorRef.current = quill;
 
@@ -428,7 +446,7 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                 <div ref={containerRef} />
             </Box>
             <MultiStylePropertyPanel
-                names={['color', 'backgroundColor', 'fontFamily', 'fontSize', 'textAlign', 'padding']}
+                names={['color', 'backgroundColor', 'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'lineHeight', 'padding']}
                 value={data.style}
                 onChange={(style) => updateData({ ...data, style })}
             />    

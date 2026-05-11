@@ -1,7 +1,7 @@
 import React from 'react';
 import { RichTextProps } from './RichTextPropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
-import { sanitizeRichText } from './sanitizeRichText.js';
+import { sanitizeRichText } from './sanitiseRichText.js';
 
 /**
  * Renders sanitized rich-text HTML inside a styled wrapper element.
@@ -29,6 +29,7 @@ export default function RichTextEditor({ style, props }: RichTextProps) {
     }
     if (style.fontSize) wrapperStyle.fontSize = `${style.fontSize}px`;
     if (style.fontWeight) wrapperStyle.fontWeight = style.fontWeight as any;
+    if (style.lineHeight) wrapperStyle.lineHeight = style.lineHeight;
     if (style.textAlign) wrapperStyle.textAlign = style.textAlign as any;
     if (style.padding) {
       const { top = 0, right = 0, bottom = 0, left = 0 } = style.padding as any;

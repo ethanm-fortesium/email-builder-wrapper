@@ -34,6 +34,7 @@ export default function MainTabsGroup() {
     <Tabs value={selectedMainTab} onChange={handleChange}>
       <Tab
         value="editor"
+        disabled={readOnly}
         label={
           <Tooltip title="Edit">
             <EditOutlined fontSize="small" />
@@ -50,6 +51,7 @@ export default function MainTabsGroup() {
       />
       <Tab
         value="html"
+        disabled={readOnly}
         label={
           <Tooltip title="HTML output">
             <CodeOutlined fontSize="small" />
@@ -63,6 +65,7 @@ export default function MainTabsGroup() {
             <DataObjectOutlined fontSize="small" />
           </Tooltip>
         }
+        disabled={readOnly}
       />
     </Tabs>
   );

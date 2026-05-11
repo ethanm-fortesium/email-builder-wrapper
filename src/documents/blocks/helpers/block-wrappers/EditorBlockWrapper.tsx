@@ -85,8 +85,6 @@ export default function EditorBlockWrapper({ children }: TEditorBlockWrapperProp
       <Box
         sx={{
           ...cornerStyles,
-          overflow: applyRadius ? 'hidden' : undefined,
-          backgroundClip: applyRadius ? 'padding-box' : undefined,
         }}
       >
         {children}

@@ -7,7 +7,6 @@ import ReaderBlock from '../../documents/editor/ReaderBlock.js';
 import EditorBlock from '../../documents/editor/EditorBlock.js';
 import {
   setSelectedScreenSize,
-  useDocument,
   useSelectedMainTab,
   useSelectedScreenSize,
 } from '../../documents/editor/EditorContext.js';
@@ -30,7 +29,6 @@ import MainTabsGroup from './MainTabsGroup.js';
  * @returns The rendered React element for the template panel, including header controls and the selected main content view.
  */
 export default function TemplatePanel() {
-  const _document = useDocument();
   const selectedMainTab = useSelectedMainTab();
   const selectedScreenSize = useSelectedScreenSize();
 

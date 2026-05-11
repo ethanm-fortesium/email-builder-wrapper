@@ -16,6 +16,7 @@ const StyleSchema = z
     fontFamily: z.string().optional().nullable(),
     fontSize: z.number().int().min(8).max(48).optional().nullable(),
     fontWeight: z.union([z.string(), z.number()]).optional().nullable(),
+    lineHeight: z.number().min(1).max(3).optional().nullable(),
     textAlign: z.enum(['left', 'center', 'right']).optional().nullable(),
   })
   .optional()

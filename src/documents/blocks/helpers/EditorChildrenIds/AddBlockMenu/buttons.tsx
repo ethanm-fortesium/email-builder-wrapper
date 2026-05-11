@@ -16,180 +16,200 @@ import {
 } from '@mui/icons-material';
 
 import { TEditorBlock } from '../../../../editor/core.js';
+import { getApiBaseUrl, type EmailBuilderDefaults } from '../../../../editor/EditorContext.js';
 
 import sampleImage from '../../../../../assets/512px.png';
 import sampleAvatar from '../../../../../assets/round-avatar.png';
-import fortesiumLogo from '../../../../../assets/fortesiumlogo.png';
 
 type TButtonProps = {
   label: string;
   icon: JSX.Element;
   block: () => TEditorBlock;
 };
-export const BUTTONS: TButtonProps[] = [
-  {
-    label: 'Heading',
-    icon: <HMobiledataOutlined />,
-    block: () => ({
-      type: 'Heading',
-      data: {
-        props: { text: 'Hello friend' },
-        style: {
-          padding: { top: 16, bottom: 16, left: 24, right: 24 },
-        },
-      },
-    }),
-  },
-  {
-    label: 'Text',
-    icon: <NotesOutlined />,
-    block: () => ({
-      type: 'Text',
-      data: {
-        props: { text: 'My new text block' },
-        style: {
-          padding: { top: 16, bottom: 16, left: 24, right: 24 },
-          fontWeight: 'normal',
-        },
-      },
-    }),
-  },
 
-  {
-    label: 'Button',
-    icon: <SmartButtonOutlined />,
-    block: () => ({
-      type: 'Button',
-      data: {
-        props: {
-          text: 'Button',
-          url: '#',
+const FALLBACK_SIGNATURE_PROPS = {
+  fullName: 'Jane Doe',
+  title: 'Account Executive',
+  company: 'Fortesium Ltd',
+  email: 'info@fortesium.co.uk',
+  website: 'https://www.fortesium.co.uk',
+  phone: '(020) 3397 3712',
+  social: { linkedIn: 'https://linkedin.com/company/fortesium', twitter: 'https://x.com/FortesiumUK' },
+};
+
+export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps[] {
+  // Neither fontSize nor fontFamily is applied per-block — new blocks inherit both from
+  // EmailLayout (baseFontSize / fontFamily) so that changing the layout in the Global panel
+  // visibly updates everything that hasn't been individually overridden via the inspector.
+  const savedSignature = defaults?.signature ?? null;
+
+  const apiBase = getApiBaseUrl();
+  const fallbackLogoUrl = apiBase ? `${apiBase}/Content/email-builder/logo.png` : null;
+
+  return [
+    {
+      label: 'Heading',
+      icon: <HMobiledataOutlined />,
+      block: () => ({
+        type: 'Heading',
+        data: {
+          props: { text: 'Hello friend' },
+          // No explicit fontFamily — inherits from EmailLayout. Heading sizes are driven by level (h1/h2/h3).
+          style: {
+            padding: { top: 16, bottom: 16, left: 24, right: 24 },
+          },
         },
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
-    label: 'Image',
-    icon: <ImageOutlined />,
-    block: () => ({
-      type: 'Image',
-      data: {
-        props: {
-          url: sampleImage,
-          alt: 'Sample image',
-          contentAlignment: 'middle',
-          linkHref: null,
+      }),
+    },
+    {
+      label: 'Text',
+      icon: <NotesOutlined />,
+      block: () => ({
+        type: 'Text',
+        data: {
+          props: { text: 'My new text block' },
+          // No explicit fontSize / fontFamily — inherits from EmailLayout so global panel changes propagate.
+          style: {
+            padding: { top: 16, bottom: 16, left: 24, right: 24 },
+            fontWeight: 'normal',
+          },
         },
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
-    label: 'Avatar',
-    icon: <AccountCircleOutlined />,
-    block: () => ({
-      type: 'Avatar',
-      data: {
-        props: {
-          imageUrl: sampleAvatar,
-          shape: 'circle',
+      }),
+    },
+    {
+      label: 'Button',
+      icon: <SmartButtonOutlined />,
+      block: () => ({
+        type: 'Button',
+        data: {
+          props: {
+            text: 'Button',
+            url: '#',
+          },
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
         },
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
-    label: 'Divider',
-    icon: <HorizontalRuleOutlined />,
-    block: () => ({
-      type: 'Divider',
-      data: {
-        style: { padding: { top: 16, right: 0, bottom: 16, left: 0 } },
-        props: {
-          lineColor: '#CCCCCC',
+      }),
+    },
+    {
+      label: 'Image',
+      icon: <ImageOutlined />,
+      block: () => ({
+        type: 'Image',
+        data: {
+          props: {
+            url: sampleImage,
+            alt: 'Sample image',
+            contentAlignment: 'middle',
+            linkHref: null,
+          },
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
         },
-      },
-    }),
-  },
-  {
-    label: 'Spacer',
-    icon: <Crop32Outlined />,
-    block: () => ({
-      type: 'Spacer',
-      data: {},
-    }),
-  },
-  {
-    label: 'Html',
-    icon: <HtmlOutlined />,
-    block: () => ({
-      type: 'Html',
-      data: {
-        props: { contents: '<strong>Hello world</strong>' },
-        style: {
-          fontSize: 16,
-          textAlign: null,
-          padding: { top: 16, bottom: 16, left: 24, right: 24 },
+      }),
+    },
+    {
+      label: 'Avatar',
+      icon: <AccountCircleOutlined />,
+      block: () => ({
+        type: 'Avatar',
+        data: {
+          props: {
+            imageUrl: sampleAvatar,
+            shape: 'circle',
+          },
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
         },
-      },
-    }),
-  },
-  {
-    label: 'Columns',
-    icon: <ViewColumnOutlined />,
-    block: () => ({
-      type: 'ColumnsContainer',
-      data: {
-        props: {
-          columnsGap: 16,
-          columnsCount: 3,
-          columns: [{ childrenIds: [] }, { childrenIds: [] }, { childrenIds: [] }],
+      }),
+    },
+    {
+      label: 'Divider',
+      icon: <HorizontalRuleOutlined />,
+      block: () => ({
+        type: 'Divider',
+        data: {
+          style: { padding: { top: 16, right: 0, bottom: 16, left: 0 } },
+          props: {
+            lineColor: '#CCCCCC',
+          },
         },
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
-    label: 'Container',
-    icon: <LibraryAddOutlined />,
-    block: () => ({
-      type: 'Container',
-      data: {
-        props: {},
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
-      },
-    }),
-  },
-  {
-    label: 'Signature',
-    icon: <ContactMailOutlined />,
-    block: () => ({
-      type: 'Signature',
-      data: {
-        style: { padding: { top: 16, bottom: 24, left: 24, right: 24 }, fontSize: 14, fontFamily: 'MODERN_SANS', fontWeight: 400 },
-        props: {
-          fullName: 'Jane Doe',
-          title: 'Account Executive',
-          company: 'Fortesium Ltd',
-          email: 'info@fortesium.co.uk',
-          website: 'https://www.fortesium.co.uk',
-          phone: '(020) 3397 3712',
-          social: { linkedIn: 'https://linkedin.com/company/fortesium', twitter: 'https://x.com/FortesiumUK' },
-          logoUrl: fortesiumLogo,
+      }),
+    },
+    {
+      label: 'Spacer',
+      icon: <Crop32Outlined />,
+      block: () => ({
+        type: 'Spacer',
+        data: {},
+      }),
+    },
+    {
+      label: 'Html',
+      icon: <HtmlOutlined />,
+      block: () => ({
+        type: 'Html',
+        data: {
+          props: { contents: '<strong>Hello world</strong>' },
+          // No explicit fontSize — inherit from EmailLayout baseFontSize.
+          style: {
+            textAlign: null,
+            padding: { top: 16, bottom: 16, left: 24, right: 24 },
+          },
         },
-      },
-    }),
-  },
-  {
-    label: 'Rich Text',
-    icon: <WysiwygOutlined />,
-    block: () => ({
-      type: 'RichText',
-      data: {
-        props: { html: '<p>This is a <strong>rich text</strong> block. You can edit <em>font styles</em>, <u>links</u>, and more!</p>' },
-        style: { padding: { top: 16, bottom: 16, left: 24, right: 24 }, fontSize: 14, fontFamily: 'MODERN_SANS' },
-      },
-    }),
-  },
-];
+      }),
+    },
+    {
+      label: 'Columns',
+      icon: <ViewColumnOutlined />,
+      block: () => ({
+        type: 'ColumnsContainer',
+        data: {
+          props: {
+            columnsGap: 16,
+            columnsCount: 3,
+            columns: [{ childrenIds: [] }, { childrenIds: [] }, { childrenIds: [] }],
+          },
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
+        },
+      }),
+    },
+    {
+      label: 'Container',
+      icon: <LibraryAddOutlined />,
+      block: () => ({
+        type: 'Container',
+        data: {
+          props: {},
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
+        },
+      }),
+    },
+    {
+      label: 'Signature',
+      icon: <ContactMailOutlined />,
+      block: () => ({
+        type: 'Signature',
+        data: {
+          // No explicit fontSize / fontFamily on the wrapper — inherits from EmailLayout.
+          // Saved signature styles can still set them and will win via the spread below.
+          style: {
+            padding: { top: 16, bottom: 24, left: 24, right: 24 },
+            fontWeight: 400,
+            ...(savedSignature?.style ?? {}),
+          },
+          props: savedSignature?.props ?? { ...FALLBACK_SIGNATURE_PROPS, logoUrl: fallbackLogoUrl },
+        },
+      }),
+    },
+    {
+      label: 'Rich Text',
+      icon: <WysiwygOutlined />,
+      block: () => ({
+        type: 'RichText',
+        data: {
+          props: { html: '<p>This is a <strong>rich text</strong> block. You can edit <em>font styles</em>, <u>links</u>, and more!</p>' },
+          // No explicit fontSize / fontFamily — inherits from EmailLayout.
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
+        },
+      }),
+    },
+  ];
+}

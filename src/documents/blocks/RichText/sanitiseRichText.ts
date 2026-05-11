@@ -158,6 +158,26 @@ const applyLinkStyling = (root: ParentNode) => {
   });
 };
 
+/**
+ * Replace non-breaking spaces (\u00A0) that act as word separators with regular
+ * spaces so that text wraps normally. Only targets &nbsp; between word characters
+ * (e.g. pasted from Word/Outlook where every space is &nbsp;). Preserves
+ * intentional whitespace: consecutive &nbsp; runs and isolated &nbsp; next to
+ * regular spaces are left intact.
+ */
+const normalizeNbsp = (root: ParentNode) => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node: Text | null;
+  while ((node = walker.nextNode() as Text | null)) {
+    if (node.nodeValue && node.nodeValue.includes('\u00A0')) {
+      // Replace only isolated &nbsp; between word characters (acting as a space).
+      // Consecutive &nbsp; (intentional spacing) and &nbsp; adjacent to regular
+      // spaces are preserved.
+      node.nodeValue = node.nodeValue.replace(/(?<=\S)\u00A0(?=\S)/g, ' ');
+    }
+  }
+};
+
 const applyParagraphStyling = (root: ParentNode) => {
   root.querySelectorAll?.('p').forEach((paragraph) => {
     const element = paragraph as HTMLParagraphElement;
@@ -168,10 +188,26 @@ const applyParagraphStyling = (root: ParentNode) => {
       return;
     }
 
-    appendStyleIfMissingMany(element, [
-      { property: 'margin', declaration: 'margin:0 0 12px' },
-      { property: 'line-height', declaration: 'line-height:1.4' },
-    ]);
+    // Empty paragraphs with only a <br> are Quill's blank-line spacers.
+    // Many email clients (Outlook, Gmail) apply their own default margins to
+    // <p> tags which causes blank lines to appear taller than in the editor.
+    // Replace <p><br></p> with a <div> spacer that email clients won't add
+    // extra margin to, sized to match a single blank line in the editor.
+    const isEmptyBrParagraph = !textContent && element.querySelector('br') && !element.querySelector('img');
+    if (isEmptyBrParagraph) {
+      const spacer = document.createElement('div');
+      spacer.innerHTML = '\u200B';
+      spacer.setAttribute('style', 'margin:0;padding:0;line-height:inherit;font-size:inherit');
+      element.replaceWith(spacer);
+      return;
+    }
+
+    // Only reset margin; line-height is inherited from the RichText block's
+    // wrapper (user-configurable) or the layout default (1.5), matching the
+    // canvas editor where .rich-text-content p { margin: 0 } is the only
+    // override.  Setting an explicit line-height here would fight with the
+    // block-level setting and diverge from what the user sees in the editor.
+    appendStyleIfMissing(element, 'margin', 'margin:0');
   });
 };
 
@@ -183,7 +219,14 @@ const applyParagraphStyling = (root: ParentNode) => {
  */
 export const sanitizeRichTextHtml = (html: string): string => {
   if (!html) return '';
-  return DOMPurify.sanitize(html, BASE_CONFIG);
+  const sanitized = DOMPurify.sanitize(html, BASE_CONFIG);
+  // Normalize non-breaking spaces that act as word separators (emitted by Quill
+  // or pasted from Word/Outlook) to regular spaces so text wraps correctly.
+  // Only targets isolated &nbsp; between non-space characters; preserves
+  // consecutive &nbsp; used for intentional spacing.
+  return sanitized
+    .replace(/(?<=\S)\u00A0(?=\S)/g, ' ')
+    .replace(/(?<=\S)&nbsp;(?=\S)/g, ' ');
 };
 
 /**
@@ -206,6 +249,11 @@ export const decorateRichTextForEmail = (sanitizedHtml: string, options?: RichTe
   // `sanitizedHtml` is already DOMPurify-sanitized; we only need DOM parsing here.
   const container = document.createElement('div');
   container.innerHTML = sanitizedHtml;
+
+  // Normalize non-breaking spaces to regular spaces inside text nodes so that
+  // long runs of &nbsp;-separated words (common when pasting from Word/Outlook)
+  // can wrap normally. Preserves isolated &nbsp; used for intentional spacing.
+  normalizeNbsp(container);
 
   if (decorateParagraphs) applyParagraphStyling(container);
   if (decorateLists) applyListStyling(container, { promoteListItemColors });

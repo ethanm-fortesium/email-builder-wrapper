@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { EmailTable, resolveFontFamily } from '../helpers/emailTable.js';
 
 import { RichTextProps } from './RichTextPropsSchema.js';
-import { sanitizeRichText } from './sanitizeRichText.js';
+import { sanitizeRichText } from './sanitiseRichText.js';
 
 /**
  * Render sanitized rich text into a styled container.
@@ -13,6 +13,7 @@ import { sanitizeRichText } from './sanitizeRichText.js';
  * @param style - Optional style overrides for the wrapper; padding may be an object with top/right/bottom/left numeric values.
  * @param props - Rich-text source; `props.html` is used if present, otherwise `props.initial` is used, falling back to an empty string.
  * @returns A JSX element containing the sanitized HTML with links decorated.
+ */
 export default function RichTextReader({ style, props }: RichTextProps) {
   const html = props?.html || props?.initial || '';
   const sanitisedHtml = useMemo(() => sanitizeRichText(html, { decorateLinks: true }), [html]);
@@ -25,12 +26,23 @@ export default function RichTextReader({ style, props }: RichTextProps) {
     fontFamily: resolveFontFamily(style?.fontFamily ?? undefined),
     fontSize: style?.fontSize ? `${style.fontSize}px` : undefined,
     fontWeight: style?.fontWeight ?? undefined,
+    lineHeight: style?.lineHeight ? `${Math.round(style.lineHeight * 100)}%` : undefined,
     textAlign: style?.textAlign ?? undefined,
   };
 
+  // mso-line-height-rule is not a valid React CSS property so we inject it via
+  // a wrapping <div> with a raw style string when lineHeight is set.
+  const msoWrapper = style?.lineHeight
+    ? { open: '<div style="mso-line-height-rule:exactly">', close: '</div>' }
+    : null;
+
+  const wrappedHtml = msoWrapper
+    ? `${msoWrapper.open}${sanitisedHtml}${msoWrapper.close}`
+    : sanitisedHtml;
+
   return (
     <EmailTable backgroundColor={backgroundColor} padding={cellPadding as any}>
-      <div style={contentStyle} dangerouslySetInnerHTML={{ __html: sanitisedHtml }} />
+      <div style={contentStyle} dangerouslySetInnerHTML={{ __html: wrappedHtml }} />
     </EmailTable>
   );
 }

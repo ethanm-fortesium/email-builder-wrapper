@@ -4,6 +4,24 @@ import getConfiguration from '../../getConfiguration/index.js';
 
 import { TEditorConfiguration } from './core.js';
 
+export type EmailBuilderDefaults = {
+  fontFamilyKey?: string | null;
+  fontSizePx?: number | null;
+  textColor?: string | null;
+  // Global layout styling — used to seed the EmailLayout root for new emails and to populate
+  // the Global sidebar inputs when an email's own data lacks a value.
+  canvasWidth?: number | null;
+  canvasColor?: string | null;
+  backdropColor?: string | null;
+  borderColor?: string | null;
+  borderRadius?: number | null;
+  logoUrl?: string | null;
+  signature?: { props?: any; style?: any } | null;
+};
+
+export type ToastSeverity = 'success' | 'info' | 'warning' | 'error';
+export type ToastState = { id: number; message: string; severity: ToastSeverity } | null;
+
 type TValue = {
   document: TEditorConfiguration;
 
@@ -14,6 +32,9 @@ type TValue = {
 
   inspectorDrawerOpen: boolean;
   readOnly: boolean;
+
+  defaults: EmailBuilderDefaults | null;
+  toast: ToastState;
 };
 
 const editorStateStore = create<TValue>(() => ({
@@ -25,7 +46,30 @@ const editorStateStore = create<TValue>(() => ({
 
   inspectorDrawerOpen: true,
   readOnly: false,
+
+  defaults: null,
+  toast: null,
 }));
+
+let hostEventDispatcher: ((name: string, detail: unknown) => void) | null = null;
+
+export function setHostEventDispatcher(fn: typeof hostEventDispatcher) {
+  hostEventDispatcher = fn;
+}
+
+export function dispatchHostEvent(name: string, detail: unknown) {
+  hostEventDispatcher?.(name, detail);
+}
+
+let _apiBaseUrl: string | null = null;
+
+export function setApiBaseUrl(url: string | null) {
+  _apiBaseUrl = url;
+}
+
+export function getApiBaseUrl(): string | null {
+  return _apiBaseUrl;
+}
 
 /**
  * Gets the current editor document configuration.
@@ -214,4 +258,31 @@ export function setReadOnly(readOnly: boolean) {
  */
 export function getEditorState() {
   return editorStateStore.getState();
+}
+
+export function useDefaults() {
+  return editorStateStore((s) => s.defaults);
+}
+
+export function getDefaults() {
+  return editorStateStore.getState().defaults;
+}
+
+export function setDefaults(defaults: EmailBuilderDefaults | null) {
+  return editorStateStore.setState({ defaults });
+}
+
+export function useToast() {
+  return editorStateStore((s) => s.toast);
+}
+
+let toastIdCounter = 0;
+
+export function showToast(message: string, severity: ToastSeverity = 'info') {
+  toastIdCounter += 1;
+  return editorStateStore.setState({ toast: { id: toastIdCounter, message, severity } });
+}
+
+export function dismissToast() {
+  return editorStateStore.setState({ toast: null });
 }

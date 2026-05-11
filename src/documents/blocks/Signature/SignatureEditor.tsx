@@ -2,10 +2,11 @@ import React from 'react';
 
 import { SignatureProps } from './SignaturePropsSchema.js';
 import { FONT_FAMILIES } from '../helpers/fontFamily.js';
-import linkedinIcon from '../../../assets/social/linkedin.png';
-import facebookIcon from '../../../assets/social/facebook.png';
-import twitterIcon from '../../../assets/social/twitter.png';
-import instagramIcon from '../../../assets/social/instagram.png';
+import linkedinIconFallback from '../../../assets/social/linkedin.png';
+import facebookIconFallback from '../../../assets/social/facebook.png';
+import twitterIconFallback from '../../../assets/social/twitter.png';
+import instagramIconFallback from '../../../assets/social/instagram.png';
+import { getApiBaseUrl } from '../../editor/EditorContext.js';
 import DOMPurify from 'dompurify';
 
 const isSafeHref = (value: string) => /^(https?:|mailto:|tel:)/i.test(value.trim());
@@ -36,7 +37,12 @@ function InlineLink({ href, children }: { href?: string | null; children: React.
  * @returns A React element representing the composed signature block.
  */
 export default function SignatureEditor({ style, props }: SignatureProps) {
-  const { fullName, title, company, email, phone, address, website, logoUrl, logoWidth, social, disclaimerHtml } = props || {};
+  const { fullName, title, company, email, phone, address, website, logoUrl: rawLogoUrl, logoWidth, social, disclaimerHtml } = props || {};
+
+  // Gmail and Outlook strip data: URIs from <img src> for security/bandwidth reasons.
+  // Drop them rather than rendering a broken image — and to keep the editor preview honest about
+  // what email clients will actually show. Users should host their logo and reference it by https URL.
+  const logoUrl = typeof rawLogoUrl === 'string' && rawLogoUrl.startsWith('data:') ? null : rawLogoUrl;
 
   // wrapperStyle holds shared styles except fontSize; fontSize applied only to main content to avoid impacting disclaimer.
   const wrapperStyle: React.CSSProperties = {};
@@ -90,10 +96,19 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   const socialParts: Array<React.ReactNode> = [];
   const iconSize = 25;
   const iconStyle: React.CSSProperties = { width: iconSize, height: iconSize, display: 'block' };
+
+  // Use hosted URLs when apiBaseUrl is available (data URIs are stripped by Gmail/Outlook)
+  const apiBase = getApiBaseUrl();
+  const socialIconBase = apiBase ? `${apiBase}/Content/email-builder/social` : null;
+  const linkedinIcon = socialIconBase ? `${socialIconBase}/linkedin.png` : linkedinIconFallback;
+  const facebookIcon = socialIconBase ? `${socialIconBase}/facebook.png` : facebookIconFallback;
+  const twitterIcon = socialIconBase ? `${socialIconBase}/twitter.png` : twitterIconFallback;
+  const instagramIcon = socialIconBase ? `${socialIconBase}/instagram.png` : instagramIconFallback;
+
   const wrapIcon = (href: string | null | undefined, iconSrc: string, alt: string) => {
     if (!href || !isSafeHref(href)) return null;
     return (
-      <a key={alt} href={href} style={{ display: 'inline-block', marginRight: 8 }}>
+      <a key={alt} href={href} style={{ display: 'inline-block' }}>
         <img src={iconSrc} alt={alt} width={iconSize} height={iconSize} style={iconStyle} />
       </a>
     );
@@ -106,7 +121,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
   const hasAnyContact = headerLines.length > 0 || otherLines.length > 0;
   const isEmpty = !logoUrl && !hasAnyContact && socialParts.length === 0 && !disclaimerHtml;
 
-  const sanitizedDisclaimer = disclaimerHtml 
+  const sanitizedDisclaimer = disclaimerHtml
     ? DOMPurify.sanitize(disclaimerHtml, { USE_PROFILES: { html: true } })
     : '';
 
@@ -120,7 +135,8 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
     </tr>
   );
 
-  const contentCellStyle: React.CSSProperties = { fontSize: contentFontSize ?? 12, lineHeight: 1.4 };
+  // Leave fontSize off when not explicitly set so cells inherit from the EmailLayout's baseFontSize.
+  const contentCellStyle: React.CSSProperties = { fontSize: contentFontSize, lineHeight: 1.4 };
 
   return (
     <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={{ width: '100%', borderCollapse: 'collapse' }}>

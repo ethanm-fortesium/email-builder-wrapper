@@ -7,6 +7,15 @@ import { EmailTable } from '../helpers/emailTable.js';
 
 export type DividerProps = z.infer<typeof DividerPropsSchema>;
 
+/**
+ * Render a divider wrapped in an EmailTable for email-compatible layout.
+ *
+ * The wrapper uses the provided `style` to set the table background and cell padding; the divider receives the same style with padding removed and the provided `props`.
+ *
+ * @param style - CSS-like style for the wrapper and divider; `padding` (if present) is used for table cell padding and not forwarded to the inner divider.
+ * @param props - Divider-specific properties forwarded to the underlying divider component.
+ * @returns A React element containing the divider wrapped in an EmailTable for email rendering.
+ */
 export default function DividerReader({ style, props }: DividerProps) {
   const cellPadding = style?.padding ?? undefined;
   const backgroundColor = style?.backgroundColor ?? undefined;

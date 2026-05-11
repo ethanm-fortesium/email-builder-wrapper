@@ -32,7 +32,7 @@ type AvatarSidebarPanelProps = {
 export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: AvatarSidebarPanelProps) {
   const [, setErrors] = useState<Zod.ZodError | null>(null);
   const [uploading, setUploading] = useState(false);
-  
+
   const updateData = (d: unknown) => {
     const res = AvatarPropsSchema.safeParse(d);
     if (res.success) {
@@ -46,12 +46,12 @@ export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: Avatar
   const size = data.props?.size ?? AvatarPropsDefaults.size;
   const alt = data.props?.alt ?? AvatarPropsDefaults.alt;
   const shape = data.props?.shape ?? AvatarPropsDefaults.shape;
-  
+
   const handleUpload = async (file: File) => {
     setUploading(true);
 
     const formData = new FormData();
-    formData.append('identifier', 'image-block'); 
+    formData.append('identifier', 'image-block');
     formData.append('component', 'wysiwyg');
     formData.append('AccessControl', 'Public');
     formData.append('file', file);
@@ -70,7 +70,7 @@ export default function AvatarSidebarPanel({ data, setData, apiBaseUrl }: Avatar
       if (!json.payload || !Array.isArray(json.payload) || json.payload.length === 0) {
         throw new Error('Invalid upload response');
       }
-  const uploadedUrl = new URL(json.payload[0].url, uploadBase);
+      const uploadedUrl = new URL(json.payload[0].url, uploadBase);
       uploadedUrl.searchParams.set('download', 'false');
       const imageUrl = uploadedUrl.toString();
       updateData({ ...data, props: { ...data.props, imageUrl } });

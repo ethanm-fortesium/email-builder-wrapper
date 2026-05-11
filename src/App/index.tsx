@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Stack, useTheme } from '@mui/material';
+import { Alert, Snackbar, Stack, useTheme } from '@mui/material';
 
-import { useInspectorDrawerOpen } from '../documents/editor/EditorContext.js';
+import { dismissToast, useInspectorDrawerOpen, useToast } from '../documents/editor/EditorContext.js';
 
 import InspectorDrawer, { INSPECTOR_DRAWER_WIDTH } from './InspectorDrawer/index.js';
 import TemplatePanel from './TemplatePanel/index.js';
@@ -21,6 +21,7 @@ interface AppProps {
 
 export default function App({ apiBaseUrl }: AppProps) {
   const inspectorDrawerOpen = useInspectorDrawerOpen();
+  const toast = useToast();
 
   const marginRightTransition = useDrawerTransition('margin-right', inspectorDrawerOpen);
 
@@ -36,6 +37,20 @@ export default function App({ apiBaseUrl }: AppProps) {
       >
         <TemplatePanel />
       </Stack>
+
+      {toast !== null && (
+        <Snackbar
+          key={toast.id}
+          open
+          autoHideDuration={3500}
+          onClose={() => dismissToast()}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity={toast.severity} variant="filled" onClose={() => dismissToast()}>
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      )}
     </>
   );
 }

@@ -27,13 +27,22 @@ export default function RichTextReader({ style, props }: RichTextProps) {
     fontSize: style?.fontSize ? `${style.fontSize}px` : undefined,
     fontWeight: style?.fontWeight ?? undefined,
     lineHeight: style?.lineHeight ? `${Math.round(style.lineHeight * 100)}%` : undefined,
-    msoLineHeightRule: style?.lineHeight ? 'exactly' : undefined,
     textAlign: style?.textAlign ?? undefined,
-  } as React.CSSProperties;
+  };
+
+  // mso-line-height-rule is not a valid React CSS property so we inject it via
+  // a wrapping <div> with a raw style string when lineHeight is set.
+  const msoWrapper = style?.lineHeight
+    ? { open: '<div style="mso-line-height-rule:exactly">', close: '</div>' }
+    : null;
+
+  const wrappedHtml = msoWrapper
+    ? `${msoWrapper.open}${sanitisedHtml}${msoWrapper.close}`
+    : sanitisedHtml;
 
   return (
     <EmailTable backgroundColor={backgroundColor} padding={cellPadding as any}>
-      <div style={contentStyle} dangerouslySetInnerHTML={{ __html: sanitisedHtml }} />
+      <div style={contentStyle} dangerouslySetInnerHTML={{ __html: wrappedHtml }} />
     </EmailTable>
   );
 }

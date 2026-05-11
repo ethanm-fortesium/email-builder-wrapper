@@ -125,7 +125,7 @@ function styleObjectToString(style: Record<string, string | number | undefined>)
 }
 
 /**
- * Render an email-optimized button with an Outlook (VML) fallback and an inline-styled HTML fallback.
+ * Render an email-optimised button with an Outlook (VML) fallback and an inline-styled HTML fallback.
  *
  * Renders a table-based button suitable for broad email client compatibility, honoring provided visual
  * style overrides and ButtonProps (text, url, fullWidth, size, shape and colors). The output preserves
@@ -179,9 +179,11 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     const vmlWidthStyle = `width:${vmlWidth}px;`;
     const vmlHeightStyle = `height:${vmlHeight}px;`;
 
+    const textAlign = fullWidth ? alignment : 'center';
+
     const anchorStyle: Record<string, string> = {
         display: fullWidth ? 'block' : 'inline-block',
-        textAlign: alignment,
+        textAlign,
         textDecoration: 'none',
         backgroundColor: buttonBackgroundColor,
         color: buttonTextColor,
@@ -208,11 +210,11 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     const anchorStyleString = styleObjectToString(anchorStyle);
 
     // Outlook-only VML markup preserves rounded corners and padding inside the button.
-        const vmlTextboxStyle = `mso-fit-shape-to-text:true;`;
-        const vmlTableCellStyle = `padding:${paddingBlock}px ${paddingInline}px;text-align:${alignment};color:${buttonTextColor};font-family:${resolvedFontFamily};font-size:${fontSize}px;font-weight:${fontWeight};mso-line-height-rule:exactly;line-height:${lineHeightPx}px;`;
+        const vmlTextboxStyle = ``;
+        const vmlTableCellStyle = `padding:${paddingBlock}px ${paddingInline}px;text-align:${textAlign};color:${buttonTextColor};font-family:${resolvedFontFamily};font-size:${fontSize}px;font-weight:${fontWeight};mso-line-height-rule:exactly;line-height:${lineHeightPx}px;`;
     const vmlTableWidthAttr = fullWidth ? ' width="100%"' : '';
         const vmlTableStyle = fullWidth ? 'width:100%;' : '';
-        const vmlShapeStyle = `${vmlWidthStyle}${vmlHeightStyle}v-text-anchor:middle;mso-fit-shape-to-text:true;`;
+        const vmlShapeStyle = `${vmlWidthStyle}${vmlHeightStyle}v-text-anchor:middle;`;
 
     const vmlMarkup = `<!--[if mso]>
   <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${escapeHtml(href)}" style="${escapeHtml(vmlShapeStyle)}" arcsize="${arcSizePercent}" fillcolor="${escapeHtml(buttonBackgroundColor)}" stroke="f">
@@ -220,7 +222,7 @@ export default function ButtonReader({ style, props }: ButtonProps) {
     <v:textbox inset="0,0,0,0" style="${escapeHtml(vmlTextboxStyle)}" >
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"${vmlTableWidthAttr}${vmlTableStyle ? ` style="${escapeHtml(vmlTableStyle)}"` : ''}>
         <tr>
-          <td align="${escapeHtml(alignment)}" style="${escapeHtml(vmlTableCellStyle)}">
+          <td align="${escapeHtml(textAlign)}" style="${escapeHtml(vmlTableCellStyle)}">
             ${escapeHtml(text)}
           </td>
         </tr>

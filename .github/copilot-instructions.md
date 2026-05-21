@@ -1,7 +1,6 @@
 # Copilot Instructions for Email Builder Wrapper
 
-## Project Overview
-A React-based email template builder wrapped as a custom web component (`<emailbuilder-editor>`). The architecture bridges a React app with a Web Component API for external consumption, using Zustand for state management and the `@usewaypoint` block system for email composition.
+Concise, project-specific rules to become instantly productive when editing the email builder. Focus on the flat document model, block registration flow, and the web component <emailbuilder-editor> contract.
 
 ## Core Architecture
 

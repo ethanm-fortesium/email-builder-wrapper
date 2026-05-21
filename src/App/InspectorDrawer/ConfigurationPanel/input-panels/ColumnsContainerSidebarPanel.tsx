@@ -11,13 +11,13 @@ import { ToggleButton } from '@mui/material';
 
 import ColumnsContainerPropsSchema, {
   ColumnsContainerProps,
-} from '../../../../documents/blocks/ColumnsContainer/ColumnsContainerPropsSchema';
+} from '../../../../documents/blocks/ColumnsContainer/ColumnsContainerPropsSchema.js';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColumnWidthsInput from './helpers/inputs/ColumnWidthsInput';
-import RadioGroupInput from './helpers/inputs/RadioGroupInput';
-import SliderInput from './helpers/inputs/SliderInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
+import SliderInput from './helpers/inputs/SliderInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
+import ColumnWidthsInput from './helpers/inputs/ColumnWidthsInput.js';
 
 type ColumnsContainerPanelProps = {
   data: ColumnsContainerProps;

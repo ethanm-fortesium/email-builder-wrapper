@@ -1,35 +1,15 @@
-import EMPTY_EMAIL_MESSAGE from './sample/empty-email-message';
-import ONE_TIME_PASSCODE from './sample/one-time-passcode';
-import ORDER_ECOMMERCE from './sample/order-ecommerce';
-import POST_METRICS_REPORT from './sample/post-metrics-report';
-import RESERVATION_REMINDER from './sample/reservation-reminder';
-import RESET_PASSWORD from './sample/reset-password';
-import RESPOND_TO_MESSAGE from './sample/respond-to-message';
-import SUBSCRIPTION_RECEIPT from './sample/subscription-receipt';
-import WELCOME from './sample/welcome';
+import EMPTY_EMAIL_MESSAGE from './sample/empty-email-message.js';
 
+/**
+ * Obtain a configuration object from a template string encoded with the `#code/` prefix.
+ *
+ * If the template contains a valid encoded configuration after the `#code/` prefix, it returns
+ * the parsed object; otherwise it returns the fallback `EMPTY_EMAIL_MESSAGE`.
+ *
+ * @param template - Template string that may contain a base64- and URI-encoded JSON configuration prefixed with `#code/`
+ * @returns The parsed configuration object when present and valid, otherwise `EMPTY_EMAIL_MESSAGE`
+ */
 export default function getConfiguration(template: string) {
-  if (template.startsWith('#sample/')) {
-    const sampleName = template.replace('#sample/', '');
-    switch (sampleName) {
-      case 'welcome':
-        return WELCOME;
-      case 'one-time-password':
-        return ONE_TIME_PASSCODE;
-      case 'order-ecomerce':
-        return ORDER_ECOMMERCE;
-      case 'post-metrics-report':
-        return POST_METRICS_REPORT;
-      case 'reservation-reminder':
-        return RESERVATION_REMINDER;
-      case 'reset-password':
-        return RESET_PASSWORD;
-      case 'respond-to-message':
-        return RESPOND_TO_MESSAGE;
-      case 'subscription-receipt':
-        return SUBSCRIPTION_RECEIPT;
-    }
-  }
 
   if (template.startsWith('#code/')) {
     const encodedString = template.replace('#code/', '');

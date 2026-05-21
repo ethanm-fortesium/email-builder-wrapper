@@ -4,15 +4,24 @@ import { ZodError } from 'zod';
 import { HeightOutlined } from '@mui/icons-material';
 import { DividerProps, DividerPropsDefaults, DividerPropsSchema } from '@usewaypoint/block-divider';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColorInput from './helpers/inputs/ColorInput';
-import SliderInput from './helpers/inputs/SliderInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import ColorInput from './helpers/inputs/ColorInput/index.js';
+import SliderInput from './helpers/inputs/SliderInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type DividerSidebarPanelProps = {
   data: DividerProps;
   setData: (v: DividerProps) => void;
 };
+/**
+ * Sidebar panel for editing a Divider block's properties.
+ *
+ * Renders controls for line color, height, and style; validates changes with `DividerPropsSchema` and calls `setData` with the validated updated `DividerProps`. Validation errors are retained in component state.
+ *
+ * @param data - The current `DividerProps` being edited.
+ * @param setData - Callback invoked with the updated `DividerProps` when validation succeeds.
+ * @returns The sidebar panel JSX element for the Divider block.
+ */
 export default function DividerSidebarPanel({ data, setData }: DividerSidebarPanelProps) {
   const [, setErrors] = useState<ZodError | null>(null);
   const updateData = (d: unknown) => {
@@ -31,7 +40,7 @@ export default function DividerSidebarPanel({ data, setData }: DividerSidebarPan
   return (
     <BaseSidebarPanel title="Divider block">
       <ColorInput
-        label="Color"
+        label="Colour"
         defaultValue={lineColor}
         onChange={(lineColor) => updateData({ ...data, props: { ...data.props, lineColor } })}
       />

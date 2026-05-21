@@ -3,20 +3,50 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import DOMPurify from 'dompurify';
 
 // Import existing App + theme 
 import App from './App/index.js';
 import theme from './theme.js';
-import { useDocument, resetDocument } from './documents/editor/EditorContext.js';
+import { resolveApiBaseUrl } from './utils/resolveApiBaseUrl.js';
+import {
+  useDocument,
+  resetDocument,
+  setReadOnly,
+  getEditorState,
+  setSelectedMainTab,
+  setInspectorDrawerOpen,
+  setDefaults,
+  getDefaults,
+  setHostEventDispatcher,
+  setApiBaseUrl,
+  showToast,
+  EmailBuilderDefaults,
+  ToastSeverity,
+} from './documents/editor/EditorContext.js';
 import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
 
-// Internal React component that hooks into the document store and dispatches events
+/**
+ * Root React component that connects the editor document store to the host element and renders the email builder App.
+ *
+ * This component listens to the document store, derives static HTML from the current document, and informs the host element of updates. On each document change it updates the host's cached latest document/html and dispatches an `emailContentChange` event whose detail includes `html`, `document`, and `origin` (`"programmatic"` or `"user"`). When the component first mounts it dispatches an `emailBuilderReady` event.
+ *
+ * @param host - The hosting custom element instance that receives latest document/html updates and will receive dispatched events.
+ * @param apiBaseUrl - The API base URL (will be resolved before being passed to the App).
+ * @returns The React element tree for the email builder application.
+ */
 function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiBaseUrl: string }) {
   const document = useDocument();
   const latestDocRef = useRef<any>(document);
+  const resolvedApiBaseUrl = useMemo(() => resolveApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
+
+  setApiBaseUrl(resolvedApiBaseUrl);
 
   // Compute HTML whenever document changes
-  const html = useMemo(() => renderToStaticMarkup(document, { rootBlockId: 'root' }), [document]);
+  const html = useMemo(
+    () => renderToStaticMarkup(document, { rootBlockId: 'root' }),
+    [document, resolvedApiBaseUrl]
+  );
 
   // Keep reference for public methods
   useEffect(() => {
@@ -31,8 +61,11 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
     );
   }, [document, html, host]);
 
-  // Ready event (first mount)
+  // Ready event (first mount) + register host event dispatcher
   useEffect(() => {
+    setHostEventDispatcher((name, detail) => {
+      host.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+    });
     host.dispatchEvent(
       new CustomEvent('emailBuilderReady', {
         detail: {},
@@ -40,12 +73,13 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
         composed: true,
       })
     );
-  }, []);
+    return () => setHostEventDispatcher(null);
+  }, [host]);
 
   return (
     <>
       <CssBaseline />
-      <App apiBaseUrl={apiBaseUrl} />
+      <App apiBaseUrl={resolvedApiBaseUrl} />
     </>
   );
 }
@@ -60,6 +94,9 @@ class EmailBuilderEditor extends HTMLElement {
   private _lastImportedHtml: string | null = null; // Last HTML string passed in via setHtml/importHtml to avoid loops
   private _lastImportedConfigHash: string | null = null; // Dedupe for configuration imports
   private _pendingConfig: any = null; // Pending configuration before mount
+  private _readOnlySnapshot: { selectedMainTab: ReturnType<typeof getEditorState>['selectedMainTab']; inspectorDrawerOpen: boolean } | null = null;
+  private _attributeSync = false;
+  private _readOnlyMode = false;
 
   // Called by React side to update cached values
   public __setLatest(document: any, html: string) {
@@ -69,6 +106,31 @@ class EmailBuilderEditor extends HTMLElement {
   // Internal accessor used by React effect for event origin determination
   public __isProgrammatic() { return this._isProgrammaticImport; }
 
+  static get observedAttributes() {
+    return ['readonly', 'defaults'];
+  }
+
+  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
+    if (name === 'readonly' && !this._attributeSync) {
+      this.__applyReadOnly(newValue !== null);
+    }
+    if (name === 'defaults' && newValue) {
+      try {
+        const parsed = JSON.parse(newValue);
+        this.setDefaults(parsed);
+      } catch (e) {
+        console.warn('[EmailBuilder] invalid defaults attribute', e);
+      }
+    }
+  }
+
+  get readOnly() {
+    return this._readOnlyMode;
+  }
+
+  set readOnly(value: boolean) {
+    this.setReadOnlyMode(value);
+  }
   connectedCallback() {
     if (this._root) return; // Already mounted
 
@@ -85,6 +147,19 @@ class EmailBuilderEditor extends HTMLElement {
         </ThemeProvider>
       </React.StrictMode>
     );
+
+    if (this.hasAttribute('readonly')) {
+      this.__applyReadOnly(true);
+    }
+
+    const defaultsAttr = this.getAttribute('defaults');
+    if (defaultsAttr) {
+      try {
+        this.setDefaults(JSON.parse(defaultsAttr));
+      } catch (e) {
+        console.warn('[EmailBuilder] invalid defaults attribute', e);
+      }
+    }
 
     queueMicrotask(() => {
       if (!this._pendingConfig && !this._pendingHtml) {
@@ -119,10 +194,41 @@ class EmailBuilderEditor extends HTMLElement {
     return this._latestDocument;
   }
 
+  public setReadOnlyMode(readOnly: boolean) {
+    this.__applyReadOnly(readOnly);
+  }
+
+  /**
+   * Apply client-wide defaults (font, font size, signature, logo) used to seed NEW blocks
+   * and the EmailLayout for fresh emails. Existing documents are not mutated.
+   */
+  public setDefaults(defaults: EmailBuilderDefaults | null) {
+    setDefaults(defaults ?? null);
+  }
+
+  public getDefaults(): EmailBuilderDefaults | null {
+    return getDefaults();
+  }
+
+  /**
+   * Show a transient toast inside the editor surface. Severity drives the colour
+   * (success = green, error = red, warning = amber, info = blue). Auto-dismisses.
+   */
+  public showToast(message: string, severity: ToastSeverity = 'info') {
+    if (!message) return;
+    showToast(message, severity);
+  }
+
+  public toggleReadOnlyMode() {
+    this.setReadOnlyMode(!this._readOnlyMode);
+  }
+
   // Programmatically replace editor content with provided raw HTML
   public setHtml(htmlContent: string) {
     if (!htmlContent || typeof htmlContent !== 'string') return;
-    if (htmlContent.length === 0) {
+    const sanitizedHtml = this.__sanitizeHtmlPayload(htmlContent);
+
+    if (sanitizedHtml.length === 0) {
       if (!this._root) {
         this._pendingConfig = this.__buildEmptyDocument();
         return;
@@ -144,16 +250,16 @@ class EmailBuilderEditor extends HTMLElement {
     }
 
     // Short-circuit if identical to last imported to avoid infinite feedback loops
-    if (this._lastImportedHtml === htmlContent) return;
-    this._lastImportedHtml = htmlContent;
+    if (this._lastImportedHtml === sanitizedHtml) return;
+    this._lastImportedHtml = sanitizedHtml;
     this._lastImportedConfigHash = null; // Clear config hash when importing HTML
 
     if (!this._root) {
-      this._pendingHtml = htmlContent;
+      this._pendingHtml = sanitizedHtml;
       return;
     }
     this._isProgrammaticImport = true;
-    this.__applyHtml(htmlContent);
+    this.__applyHtml(sanitizedHtml);
   }
 
   // Smart template import: accepts raw HTML string, JSON string, or configuration object
@@ -197,15 +303,20 @@ class EmailBuilderEditor extends HTMLElement {
   private __applyHtml(htmlContent: string) {
     // Create stable ids so future successive imports fully replace
     const htmlBlockId = 'block-imported-html';
+    const defaults = getDefaults();
     const newDocument = {
       root: {
         type: 'EmailLayout',
         data: {
-          backdropColor: '#F5F5F5',
-            canvasColor: '#FFFFFF',
-            textColor: '#262626',
-            fontFamily: 'MODERN_SANS',
-            childrenIds: [htmlBlockId],
+          backdropColor: defaults?.backdropColor ?? '#F5F5F5',
+          canvasColor: defaults?.canvasColor ?? '#FFFFFF',
+          borderColor: defaults?.borderColor ?? null,
+          borderRadius: defaults?.borderRadius ?? 0,
+          canvasWidth: defaults?.canvasWidth ?? 600,
+          textColor: defaults?.textColor ?? '#262626',
+          fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
+          baseFontSize: defaults?.fontSizePx ?? 16,
+          childrenIds: [htmlBlockId],
         },
       },
       [htmlBlockId]: {
@@ -234,14 +345,19 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   private __buildEmptyDocument() {
+    const defaults = getDefaults();
     return {
       root: {
         type: 'EmailLayout',
         data: {
-          backdropColor: '#F5F5F5',
-          canvasColor: '#FFFFFF',
-          textColor: '#262626',
-          fontFamily: 'MODERN_SANS',
+          backdropColor: defaults?.backdropColor ?? '#F5F5F5',
+          canvasColor: defaults?.canvasColor ?? '#FFFFFF',
+          borderColor: defaults?.borderColor ?? null,
+          borderRadius: defaults?.borderRadius ?? 0,
+          canvasWidth: defaults?.canvasWidth ?? 600,
+          textColor: defaults?.textColor ?? '#262626',
+          fontFamily: defaults?.fontFamilyKey ?? 'MODERN_SANS',
+          baseFontSize: defaults?.fontSizePx ?? 16,
           childrenIds: [],
         },
       },
@@ -249,6 +365,47 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   // --- Helpers --------------------------------------------------
+  private __sanitizeHtmlPayload(htmlContent: string) {
+    if (!htmlContent) {
+      return '';
+    }
+
+    const sanitized = DOMPurify.sanitize(htmlContent, {
+      ADD_TAGS: ['style'],
+      ADD_ATTR: ['style'],
+    });
+
+    const styles: string[] = [];
+
+    const captureStyles = (source: string | null | undefined) => {
+      if (!source) return;
+      const matches = source.match(/<style[^>]*>[\s\S]*?<\/style>/gi);
+      if (matches) {
+        styles.push(...matches);
+      }
+    };
+
+    const headMatch = sanitized.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+    captureStyles(headMatch?.[1]);
+
+    const bodyMatch = sanitized.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    let working = bodyMatch ? bodyMatch[1] : sanitized;
+
+    captureStyles(working);
+    working = working.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+    working = working
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<html[^>]*>/gi, '')
+      .replace(/<\/html>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<body[^>]*>/gi, '')
+      .replace(/<\/body>/gi, '');
+
+    const cleaned = working.trim();
+    return [...styles, cleaned].filter(Boolean).join('\n');
+  }
+
   private __isLikelyConfiguration(obj: any): boolean {
     if (!obj || typeof obj !== 'object') return false;
     const root = obj.root;
@@ -258,6 +415,76 @@ class EmailBuilderEditor extends HTMLElement {
     if (!Array.isArray(root.data.childrenIds)) return false;
     if (root.data.childrenIds.some((id: string) => id && !obj[id])) return false;
     return true;
+  }
+
+  private __applyReadOnly(readOnly: boolean) {
+    const state = getEditorState();
+    if (this._readOnlyMode === readOnly && state.readOnly === readOnly) {
+      return;
+    }
+
+    if (readOnly) {
+      this._readOnlySnapshot = {
+        selectedMainTab: state.selectedMainTab,
+        inspectorDrawerOpen: state.inspectorDrawerOpen,
+      };
+
+      if (!state.readOnly) {
+        setReadOnly(true);
+      }
+
+      setSelectedMainTab('preview');
+      setInspectorDrawerOpen(false);
+      this._readOnlyMode = true;
+
+      if (!this.hasAttribute('readonly')) {
+        this._attributeSync = true;
+        try {
+          this.setAttribute('readonly', '');
+        } finally {
+          this._attributeSync = false;
+        }
+      }
+
+      this.__dispatchModeChange('read-only');
+      return;
+    }
+
+    const snapshot = this._readOnlySnapshot;
+
+    if (state.readOnly) {
+      setReadOnly(false);
+    }
+
+    const nextMainTab = snapshot?.selectedMainTab ?? 'editor';
+    const nextInspector = snapshot?.inspectorDrawerOpen ?? true;
+
+    setSelectedMainTab(nextMainTab);
+    setInspectorDrawerOpen(nextInspector);
+
+    this._readOnlySnapshot = null;
+    this._readOnlyMode = false;
+
+    if (this.hasAttribute('readonly')) {
+      this._attributeSync = true;
+      try {
+        this.removeAttribute('readonly');
+      } finally {
+        this._attributeSync = false;
+      }
+    }
+
+    this.__dispatchModeChange('interactive');
+  }
+
+  private __dispatchModeChange(mode: 'read-only' | 'interactive') {
+    this.dispatchEvent(
+      new CustomEvent('emailBuilderModeChange', {
+        detail: { mode },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 

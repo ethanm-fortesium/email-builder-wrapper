@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { html, json } from './highlighters';
+import { html, json } from './highlighters.js';
 
 type TextEditorPanelProps = {
   type: 'json' | 'html' | 'javascript';

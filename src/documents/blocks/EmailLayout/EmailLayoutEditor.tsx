@@ -21,7 +21,7 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
         backgroundColor: props.backdropColor ?? '#F5F5F5',
         color: props.textColor ?? '#262626',
         fontFamily: getFontFamily(props.fontFamily),
-        fontSize: '16px',
+        fontSize: `${props.baseFontSize ?? 16}px`,
         lineHeight: 1.5,
         padding: '32px 0',
         width: '100%',

@@ -2,10 +2,10 @@ import React from 'react';
 
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
 
-import { setSidebarTab, useInspectorDrawerOpen, useSelectedSidebarTab } from '../../documents/editor/EditorContext';
+import { setSidebarTab, useInspectorDrawerOpen, useSelectedSidebarTab } from '../../documents/editor/EditorContext.js';
 
-import ConfigurationPanel from './ConfigurationPanel';
-import StylesPanel from './StylesPanel';
+import ConfigurationPanel from './ConfigurationPanel/index.js';
+import StylesPanel from './StylesPanel.js';
 
 export const INSPECTOR_DRAWER_WIDTH = 320;
 

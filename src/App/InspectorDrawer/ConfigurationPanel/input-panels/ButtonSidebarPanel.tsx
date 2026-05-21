@@ -3,16 +3,23 @@ import { ZodError } from 'zod';
 import { ToggleButton } from '@mui/material';
 import { ButtonProps, ButtonPropsDefaults, ButtonPropsSchema } from '@usewaypoint/block-button';
 
-import BaseSidebarPanel from './helpers/BaseSidebarPanel';
-import ColorInput from './helpers/inputs/ColorInput';
-import RadioGroupInput from './helpers/inputs/RadioGroupInput';
-import TextInput from './helpers/inputs/TextInput';
-import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel';
+import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
+import ColorInput from './helpers/inputs/ColorInput/index.js';
+import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
+import TextInput from './helpers/inputs/TextInput.js';
+import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 
 type ButtonSidebarPanelProps = {
   data: ButtonProps;
   setData: (v: ButtonProps) => void;
 };
+/**
+ * Renders a sidebar panel that lets the user edit a Button block's properties (text, URL, width, size, style, colors, and common style properties).
+ *
+ * @param data - Current Button block data and style to populate the form controls
+ * @param setData - Called with updated Button block data after validation
+ * @returns The sidebar panel JSX for editing the Button block
+ */
 export default function ButtonSidebarPanel({ data, setData }: ButtonSidebarPanelProps) {
   const [, setErrors] = useState<ZodError | null>(null);
 
@@ -74,12 +81,12 @@ export default function ButtonSidebarPanel({ data, setData }: ButtonSidebarPanel
         <ToggleButton value="pill">Pill</ToggleButton>
       </RadioGroupInput>
       <ColorInput
-        label="Text color"
+        label="Text colour"
         defaultValue={buttonTextColor}
         onChange={(buttonTextColor) => updateData({ ...data, props: { ...data.props, buttonTextColor } })}
       />
       <ColorInput
-        label="Button color"
+        label="Button colour"
         defaultValue={buttonBackgroundColor}
         onChange={(buttonBackgroundColor) => updateData({ ...data, props: { ...data.props, buttonBackgroundColor } })}
       />

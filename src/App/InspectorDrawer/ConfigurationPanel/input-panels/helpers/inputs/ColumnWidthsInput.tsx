@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { Stack } from '@mui/material';
 
-import TextDimensionInput from './TextDimensionInput';
+import TextDimensionInput from './TextDimensionInput.js';
 
 export const DEFAULT_2_COLUMNS = [6] as [number];
 export const DEFAULT_3_COLUMNS = [4, 8] as [number, number];

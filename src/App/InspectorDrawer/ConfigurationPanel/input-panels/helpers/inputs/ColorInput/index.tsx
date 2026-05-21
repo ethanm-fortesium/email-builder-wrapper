@@ -1,6 +1,6 @@
 import React from 'react';
 
-import BaseColorInput from './BaseColorInput';
+import BaseColorInput from './BaseColorInput.js';
 
 type Props = {
   label: string;

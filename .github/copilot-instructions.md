@@ -1,91 +1,52 @@
-# Copilot Instructions for Email Builder Wrapper
+# AI Coding Agent Guide (email-builder-wrapper)
 
-Concise, project-specific rules to become instantly productive when editing the email builder. Focus on the flat document model, block registration flow, and the web component <emailbuilder-editor> contract.
+Concise, project-specific rules to be instantly productive when editing the email builder. Focus on the flat document model, block registration flow, and the web component <emailbuilder-editor> contract.
 
-## Core Architecture
+## Architecture Essentials
+1. Entry point for embedding: `src/web-component.tsx` defines `EmailBuilderEditor` (Custom Element) and mounts React via `EmailBuilderRoot`.
+2. State store: `src/documents/editor/EditorContext.tsx` (Zustand). Single flat object: `root` EmailLayout + each block keyed by id. Avoid nested trees.
+3. Rendering split: `EditorBlock` vs `ReaderBlock`; wrappers (`EditorBlockWrapper`, `ReaderBlockWrapper`) add selection UI vs plain output.
+4. Mode control: Main tabs (`editor | preview | json | html`) and readonly attribute (forces preview + hides editing chrome via CSS selectors).
+5. Events fired from web component: `emailBuilderReady`, `emailContentChange`, `emailBuilderModeChange`. Suppress user-change semantics by setting `(_isProgrammaticImport = true)` before store mutations; unset immediately after.
 
-### Web Component Layer (`src/web-component.tsx`)
-- **Primary Interface**: `EmailBuilderEditor` class extending `HTMLElement`
-- **React Bridge**: `EmailBuilderRoot` component connects React state to web component events
-- **Key Methods**: `setHtml()`, `getHtml()`, `importTemplate()`, `setDocumentConfig()`, `getDocument()`
-- **Event System**: Dispatches `emailContentChange`, `emailBuilderReady`, `emailBuilderModeChange` events
-- **Readonly Mode**: Supports `readonly` attribute/property with CSS-based UI hiding
+## Document Configuration Pattern
+Each block object: `{ type: BlockType, data: { props?, style?, childrenIds? } }`. Root `EmailLayout` holds visual theme + `childrenIds`. Example templates live in `src/getConfiguration/sample/` (use as scaffolds not copies).
 
-### State Management (`src/documents/editor/EditorContext.tsx`)
-- **Store**: Zustand-based global state with document, UI selections, and drawer state
-- **Document Structure**: Flat object with `root` (EmailLayout) + block IDs as keys
-- **Key State**: `selectedBlockId`, `selectedMainTab` ('editor'|'preview'|'json'|'html'), `inspectorDrawerOpen`
-- **Core Actions**: `setDocument()`, `resetDocument()`, `setSelectedBlockId()`
+## Block Extension Workflow
+1. Create folder `src/documents/blocks/MyBlock/` with `MyBlockEditor.tsx`, `MyBlockReader.tsx`, `MyBlockPropsSchema.ts[x]` (Zod schema).
+2. Register in `EDITOR_DICTIONARY` (`src/documents/editor/core.tsx`). Include both editor + reader components and schema.
+3. Wrap editor component with `EditorBlockWrapper` for selection, tune menu, preview suppression.
+4. If block manages children, store child ids in `data.childrenIds` and rely on `EditorChildrenIds` helper.
 
-### Block System (`src/documents/editor/core.tsx`)
-- **Block Dictionary**: Maps block types to schemas and React components
-- **Editor vs Reader**: `EditorBlock` (editable) vs `ReaderBlock` (preview) components
-- **Wrapper Pattern**: `EditorBlockWrapper` adds selection outlines, tune menus, and preview-aware behavior
-- **Block Types**: Avatar, Button, Container, ColumnsContainer, Divider, Heading, Html, Image, Spacer, Text, EmailLayout
+## Safe State Mutations
+- Prefer `setDocument(partial)` for incremental edits; use `resetDocument(fullConfig)` only for wholesale imports.
+- Always maintain referential integrity: child ids listed in parent must exist as keys.
+- When importing HTML via `setHtml()`, system creates a single `Html` block; do not manually mix raw HTML and structured blocks without clear separation.
 
-## Document Structure Pattern
+## Fonts & Style
+Font families enumerated in `src/documents/blocks/helpers/fontFamily.ts` (`FONT_FAMILIES`, `FONT_FAMILY_NAMES`). When adding variants, keep `key`, `label`, `value` consistent; update both arrays atomically.
 
-```typescript
-// TEditorConfiguration - flat object structure
-{
-  root: {
-    type: 'EmailLayout',
-    data: { backdropColor: '#F5F5F5', canvasColor: '#FFFFFF', textColor: '#262626', fontFamily: 'MODERN_SANS', childrenIds: ['block-1', 'block-2'] }
-  },
-  'block-1': {
-    type: 'Text',
-    data: { props: { text: 'Hello' }, style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } } }
-  },
-  'block-2': { type: 'Button', data: { props: { text: 'Click me', url: 'https://example.com' } } }
-}
-```
+## Readonly & Preview Nuances
+Readonly attribute sets preview mode + disables inspector and selection overlays. Don’t try to remove logic in components—use CSS hooks already present.
 
-## Key Development Patterns
+## Import/Export
+Use `getDocument()` for current config JSON; consumers listen to `emailContentChange` (skip dispatches when `_isProgrammaticImport`). For diff-like updates, send only modified keys through `setDocument()`.
 
-### Adding New Block Types
-1. Create editor component in `src/documents/blocks/[BlockName]/`
-2. Define props schema with Zod in `[BlockName]PropsSchema.tsx`
-3. Register in `EDITOR_DICTIONARY` in `src/documents/editor/core.tsx`
-4. Wrap with `EditorBlockWrapper` for editor mode interactions
+## Quality & Conventions
+- No deep object merges: replace block objects wholesale when editing props/styles.
+- Keep schemas minimal: only validate shape used by UI; avoid speculative fields.
+- Avoid side effects inside render of wrappers; use actions from EditorContext.
 
-### Preview Mode Integration
-- Use `usePreviewMode()` hook from `PreviewModeContext` to hide editing controls
-- `EditorBlockWrapper` automatically disables outlines/interactions in preview
-- Web component's readonly mode forces preview tab and hides UI elements via CSS
+## Common Pitfalls (Avoid)
+- Adding nested block objects (breaks flat model and serializers).
+- Forgetting to clear `_isProgrammaticImport` (silences future genuine user events).
+- Registering a block without reader component (preview/json export mismatch).
 
-### State Updates
-- **Document Changes**: Use `setDocument()` with partial updates or `resetDocument()` for full replacement
-- **Block Selection**: `setSelectedBlockId(blockId)` opens inspector panel and switches to 'block-configuration' tab
-- **Programmatic Flags**: Set `_isProgrammaticImport = true` before document changes to mark events as non-user
+## Quick Build / Lint
+`npm run dev` (Vite), `npm run build` (UMD bundle `emailbuilder-editor.umd.js`), `npm run lint`. No test suite currently—add lightweight examples under `src/getConfiguration/sample/` if validating new structures.
 
-## Build & Development
+## When Editing
+Reference existing block folders for patterns (e.g. `Button`, `ColumnsContainer`). Duplicate structure; then adjust schema + editor UI. Keep modifications under 50 lines per commit when feasible for review clarity.
 
-### Commands
-```bash
-npm run dev          # Vite dev server with React app
-npm run build        # Build UMD bundle for web component distribution
-npm run preview      # Preview built bundle
-npm run lint         # ESLint check
-```
+Feedback welcome: request clarifications on missing workflows (e.g., future test strategy) and this guide will iterate.
 
-### Build Configuration (`vite.config.ts`)
-- **Dev Mode**: Serves standard React app from `index.html`
-- **Build Mode**: Creates UMD bundle (`emailbuilder-editor.umd.js`) with web component entry point
-- **Waypoint Aliases**: Maps `@usewaypoint/*` imports to local node_modules for block resolution
-- **Bundle Target**: Single UMD file with inlined dependencies for easy embedding
-
-## Web Component Integration
-- **Registration**: Auto-registers as `emailbuilder-editor` custom element
-- **Attributes**: Supports `apiBaseUrl` and `readonly` attributes
-- **HTML Import**: `setHtml()` creates minimal document with single Html block containing raw content
-- **JSON Import**: `setDocumentConfig()` accepts full editor configuration objects
-- **Event Handling**: Listen for `emailContentChange` to track user modifications vs programmatic updates
-
-## Inspector Panel Structure
-- **Two Tabs**: 'Styles' (EmailLayout props) vs 'Block Configuration' (selected block props)
-- **Sidebar Panels**: Located in `src/App/InspectorDrawer/ConfigurationPanel/input-panels/`
-- **Input Components**: Standardized inputs in `helpers/inputs/` for consistent UX
-- **Auto-open**: Selecting any block automatically opens inspector to 'block-configuration'
-
-## Sample Configurations
-Reference complete email templates in `src/getConfiguration/sample/` for document structure examples and common patterns like headers, footers, and multi-column layouts.

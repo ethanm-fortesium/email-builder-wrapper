@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export type TStyle = {
   backgroundColor?: any;
   borderColor?: any;
@@ -9,5 +7,6 @@ export type TStyle = {
   fontSize?: any;
   fontWeight?: any;
   padding?: any;
+  lineHeight?: any;
   textAlign?: any;
 };

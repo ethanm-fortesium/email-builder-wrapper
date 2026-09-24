@@ -65,6 +65,16 @@ export default function ColumnsContainerPanel({ data, setData }: ColumnsContaine
         onChange={(columnsGap) => updateData({ ...data, props: { ...data.props, columnsGap } })}
       />
       <RadioGroupInput
+        label="Stack on mobile"
+        defaultValue={data.props?.stackOnMobile === false ? 'off' : 'on'}
+        onChange={(v) => {
+          updateData({ ...data, props: { ...data.props, stackOnMobile: v === 'on' } });
+        }}
+      >
+        <ToggleButton value="on">On</ToggleButton>
+        <ToggleButton value="off">Off</ToggleButton>
+      </RadioGroupInput>
+      <RadioGroupInput
         label="Alignment"
         defaultValue={data.props?.contentAlignment ?? 'middle'}
         onChange={(contentAlignment) => {

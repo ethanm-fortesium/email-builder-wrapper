@@ -326,6 +326,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - **Number of columns** - 2 or 3 columns
 - **Column widths** - Custom width for each column
 - **Columns gap** - Space between columns (px)
+- **Stack on mobile** - On (default): columns collapse to a single stacked column on narrow/mobile screens. Off: columns stay side-by-side on every device.
 - **Alignment** - Vertical alignment (top/middle/bottom)
 - **Background colour** - Container background
 - **Padding** - Internal spacing
@@ -338,6 +339,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 **Tips:**
 - Adjust gap for better readability
 - Use equal widths for balanced layout
+- Leave "Stack on mobile" on so columns become readable single-column on phones; turn it off only for layouts that must stay side-by-side (e.g. a small logo next to nav links)
 - Test column layout on mobile view
 
 ---

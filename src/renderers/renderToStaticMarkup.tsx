@@ -4,6 +4,7 @@ import { renderToStaticMarkup as baseRenderToStaticMarkup } from 'react-dom/serv
 import Reader, { TReaderDocument } from '../Reader/core.js';
 import { clampCanvasWidth, getFontFamily } from '../documents/blocks/EmailLayout/emailLayoutShared.js';
 import type { EmailLayoutProps } from '../documents/blocks/EmailLayout/EmailLayoutPropsSchema.js';
+import { RESPONSIVE_STYLE_CSS } from '../documents/blocks/helpers/responsive.js';
 
 type EmailLayoutBlock = {
   type: 'EmailLayout';
@@ -100,6 +101,7 @@ export default function renderToStaticMarkup(document: TReaderDocument, { rootBl
     '<head>',
     '<meta charset="utf-8" />',
     '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+    `<style>${RESPONSIVE_STYLE_CSS}</style>`,
     '</head>',
     `<body style="${bodyStyle}">`,
     msoWrapperOpen,

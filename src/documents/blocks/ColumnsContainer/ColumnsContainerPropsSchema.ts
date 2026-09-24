@@ -9,6 +9,9 @@ const ColumnsContainerPropsSchema = z.object({
   props: z
     .object({
       ...BasePropsShape,
+      // When true (the default) columns collapse to a single stacked column on
+      // narrow/mobile viewports. When false they stay side-by-side everywhere.
+      stackOnMobile: z.boolean().optional().nullable(),
       columns: z.tuple([
         z.object({ childrenIds: z.array(z.string()) }),
         z.object({ childrenIds: z.array(z.string()) }),

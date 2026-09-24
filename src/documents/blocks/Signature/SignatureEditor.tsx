@@ -109,7 +109,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
     if (!href || !isSafeHref(href)) return null;
     return (
       <a key={alt} href={href} style={{ display: 'inline-block' }}>
-        <img src={iconSrc} alt={alt} width={iconSize} height={iconSize} style={iconStyle} />
+        <img src={iconSrc} alt={alt} width={iconSize} height={iconSize} style={iconStyle} draggable={false} />
       </a>
     );
   };
@@ -163,6 +163,7 @@ export default function SignatureEditor({ style, props }: SignatureProps) {
                         src={logoUrl}
                         alt={company || 'Logo'}
                         width={logoWidth || 160}
+                        draggable={false}
                         style={{
                           width: logoWidth || 160,
                           maxWidth: '100%',

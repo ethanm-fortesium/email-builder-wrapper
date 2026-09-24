@@ -72,7 +72,17 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
     schema: HtmlPropsSchema,
     Component: (props) => (
       <EditorBlockWrapper>
-        <div style={{ pointerEvents: 'none', userSelect: 'none' }}>
+        <div
+          onMouseDown={(e) => {
+            const el = e.target as HTMLElement;
+            if (
+              el.closest('[contenteditable="true"]') ||
+              ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)
+            ) {
+              e.preventDefault();
+            }
+          }}
+        >
           <Html {...props} />
         </div>
       </EditorBlockWrapper>

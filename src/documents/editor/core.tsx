@@ -143,7 +143,7 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
 
 export const EditorBlock = buildBlockComponent(EDITOR_DICTIONARY);
 export const EditorBlockSchema = buildBlockConfigurationSchema(EDITOR_DICTIONARY);
-export const EditorConfigurationSchema = z.record(z.string(), EditorBlockSchema);
+export const EditorConfigurationSchema = z.record(EditorBlockSchema);
 
 export type TEditorBlock = z.infer<typeof EditorBlockSchema>;
 export type TEditorConfiguration = Record<string, TEditorBlock>;

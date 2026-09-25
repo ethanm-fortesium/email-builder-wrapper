@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
 import getConfiguration from '../../getConfiguration/index.js';
+import {
+  applyProbedImageDimensions,
+  probeImageDimensions,
+  probeMissingImageDimensions,
+  TImageDimensionProbe,
+  TProbedImage,
+} from '../blocks/helpers/imageDimensions.js';
 
 import { TEditorConfiguration } from './core.js';
 
@@ -35,6 +42,9 @@ type TValue = {
 
   defaults: EmailBuilderDefaults | null;
   toast: ToastState;
+
+  /** How many documents have been loaded (see loadDocument). */
+  documentLoads: number;
 };
 
 const editorStateStore = create<TValue>(() => ({
@@ -49,6 +59,8 @@ const editorStateStore = create<TValue>(() => ({
 
   defaults: null,
   toast: null,
+
+  documentLoads: 0,
 }));
 
 let hostEventDispatcher: ((name: string, detail: unknown) => void) | null = null;
@@ -59,6 +71,47 @@ export function setHostEventDispatcher(fn: typeof hostEventDispatcher) {
 
 export function dispatchHostEvent(name: string, detail: unknown) {
   hostEventDispatcher?.(name, detail);
+}
+
+/** Applies a document update; `apply` must be called synchronously (or not at all). */
+export type TDocumentCommit = (apply: () => void) => void;
+
+const commitImmediately: TDocumentCommit = (apply) => apply();
+
+let backgroundUpdateScheduler: (() => TDocumentCommit) | null = null;
+
+// Which loaded document background updates belong to. Bumped by hydrateDocumentImageDimensions, which
+// runs right after every load of a document that can hold images (resetDocument cannot mark loads:
+// block moves and deletes use it too).
+let documentLoadGeneration = 0;
+
+/**
+ * Register how document updates the user did not make (e.g. backfilled image sizes) are applied.
+ * The web component uses this to report them to the host with origin 'programmatic'.
+ *
+ * @returns A function that unregisters `fn`, unless another scheduler has replaced it since.
+ */
+export function setBackgroundUpdateScheduler(fn: typeof backgroundUpdateScheduler) {
+  backgroundUpdateScheduler = fn;
+  return () => {
+    if (backgroundUpdateScheduler === fn) backgroundUpdateScheduler = null;
+  };
+}
+
+/**
+ * Call when starting async work whose result is not a user edit, and apply the result through the
+ * returned commit. Taking it up front lets the host side tell whether the user edited meanwhile.
+ *
+ * The update belongs to the document loaded when it began: once another document has been loaded
+ * the commit drops it (that load backfills its own document), so a result computed for the previous
+ * document never lands in the new one, where it could be reported as the user's change.
+ */
+export function beginBackgroundDocumentUpdate(): TDocumentCommit {
+  const generation = documentLoadGeneration;
+  const commit = backgroundUpdateScheduler?.() ?? commitImmediately;
+  return (apply) => {
+    if (generation === documentLoadGeneration) commit(apply);
+  };
 }
 
 let _apiBaseUrl: string | null = null;
@@ -178,6 +231,23 @@ export function resetDocument(document: TValue['document']) {
 }
 
 /**
+ * Replace the document with a newly loaded one: imported, opened by the host or started empty.
+ * Unlike resetDocument (which block moves and deletes also use), this counts as a load, so
+ * panels that copy document values into their own state (the Styles panel) show the new ones.
+ *
+ * @param document - The loaded document
+ */
+export function loadDocument(document: TValue['document']) {
+  resetDocument(document);
+  editorStateStore.setState((state) => ({ documentLoads: state.documentLoads + 1 }));
+}
+
+/** How many documents have been loaded; changes each time loadDocument runs. */
+export function useDocumentLoads() {
+  return editorStateStore((s) => s.documentLoads);
+}
+
+/**
  * Merge the provided document properties into the current editor document in the store.
  *
  * @param document - Document object whose properties will be merged into the existing document; provided fields override existing values
@@ -190,6 +260,45 @@ export function setDocument(document: TValue['document']) {
       ...document,
     },
   });
+}
+
+/**
+ * Merge probed natural image sizes into the CURRENT document.
+ *
+ * Results are matched against each block's current image URL, so a probe that resolves after the
+ * image was replaced (or the block deleted) is ignored, and only the size fields are written so
+ * edits made while the probe was in flight are kept.
+ *
+ * @param results - Probe results keyed by block id and the URL that was probed
+ * @param commit - How to apply the update; defaults to a plain (user-flow) document update
+ * @returns `true` if the document changed (false too when the commit dropped the update)
+ */
+export function recordImageDimensions(results: TProbedImage[], commit: TDocumentCommit = commitImmediately) {
+  const next = applyProbedImageDimensions(editorStateStore.getState().document, results);
+  if (!next) return false;
+  let applied = false;
+  commit(() => {
+    editorStateStore.setState({ document: next });
+    applied = true;
+  });
+  return applied;
+}
+
+/**
+ * Backfill natural sizes for images in the just-loaded document that lack them (documents saved
+ * before sizes were recorded). Runs in the background and applies the result as a background
+ * (non-user) update without touching the selection.
+ *
+ * Call it once per load, right after loading the document: it supersedes background updates begun
+ * for the previous document (see beginBackgroundDocumentUpdate).
+ *
+ * @returns `true` if the document was updated
+ */
+export async function hydrateDocumentImageDimensions(probe: TImageDimensionProbe = probeImageDimensions) {
+  documentLoadGeneration += 1;
+  const commit = beginBackgroundDocumentUpdate();
+  const results = await probeMissingImageDimensions(editorStateStore.getState().document, probe);
+  return recordImageDimensions(results, commit);
 }
 
 /**

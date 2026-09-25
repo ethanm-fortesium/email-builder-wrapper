@@ -1,28 +1,21 @@
 import React from 'react';
 
 import { ReaderBlock } from '../../../Reader/core.js';
+import { EmailBoxProvider } from '../helpers/emailBox.js';
+import { TypographyProvider, textStyle } from '../helpers/emailTypography.js';
 
 import { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
 import { EmailLayoutContext } from './EmailLayoutContext.js';
-import { clampCanvasWidth, getFontFamily } from './emailLayoutShared.js';
-
-/**
- * Produce a CSS border string using the provided border color.
- *
- * @returns The string "`1px solid {color}`" when `borderColor` is provided, `undefined` otherwise.
- */
-function getBorder({ borderColor }: EmailLayoutProps) {
-  if (!borderColor) {
-    return undefined;
-  }
-  return `1px solid ${borderColor}`;
-}
+import { clampCanvasWidth, getLayoutTypography } from './emailLayoutShared.js';
 
 /**
  * Render a reader-facing email layout as a responsive table structure using the provided layout props.
  *
  * Renders a full-width outer table (backdrop) that centers an inner "canvas" table sized to a clamped canvasWidth.
- * The canvas applies background, border, and radius from props and provides `canvasWidth` to descendants via EmailLayoutContext.
+ * The canvas cell carries background, border and radius (on the cell with separate borders, so the radius
+ * renders and clips its content in browsers; classic Outlook shows square corners). Descendants receive the
+ * canvas width via EmailLayoutContext, the canvas content box via EmailBoxProvider and the layout typography
+ * via TypographyProvider.
  *
  * @param props - Configuration for the email layout (canvas and backdrop colors, text/font settings, border/radius, and child block IDs).
  * @returns The table-based React element representing the composed email layout ready for reader rendering.
@@ -33,11 +26,10 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
 
   const rootBackground = props.backdropColor ?? '#F5F5F5';
   const canvasBackground = props.canvasColor ?? '#FFFFFF';
-  const textColor = props.textColor ?? '#262626';
-  const fontFamily = getFontFamily(props.fontFamily);
-  const baseFontSize = props.baseFontSize ?? 16;
-  const canvasBorder = getBorder(props);
-  const canvasRadius = props.borderRadius ?? undefined;
+  const borderColor = props.borderColor ?? null;
+  const borderWidth = borderColor ? 1 : 0;
+  const canvasRadius = props.borderRadius ?? 0;
+  const typography = getLayoutTypography(props);
 
   return (
     <table
@@ -61,12 +53,7 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
             style={{
               padding: '32px 0',
               margin: 0,
-              color: textColor,
-              fontFamily,
-              fontSize: `${baseFontSize}px`,
-              fontWeight: 400,
-              letterSpacing: '0.15008px',
-              lineHeight: '1.5',
+              ...textStyle(typography),
             }}
           >
             <table
@@ -75,24 +62,41 @@ export default function EmailLayoutReader(props: EmailLayoutProps) {
               cellSpacing={0}
               border={0}
               width={effectiveCanvasWidth}
-              bgColor={canvasBackground}
               style={{
                 margin: 0,
                 width: '100%',
                 maxWidth: `${effectiveCanvasWidth}px`,
                 tableLayout: 'fixed',
-                backgroundColor: canvasBackground,
-                borderRadius: canvasRadius,
-                border: canvasBorder,
+                borderCollapse: 'separate',
+                borderSpacing: 0,
               }}
             >
               <tbody>
                 <tr>
-                  <td style={{ padding: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                  <td
+                    bgColor={canvasBackground}
+                    style={{
+                      padding: 0,
+                      backgroundColor: canvasBackground,
+                      border: borderColor ? `${borderWidth}px solid ${borderColor}` : undefined,
+                      borderRadius: canvasRadius > 0 ? canvasRadius : undefined,
+                      // Clip content to the rounded corners, but let anything wider than the
+                      // canvas (e.g. a fixed-width table pasted into an Html block) scroll
+                      // sideways on a phone instead of being cut off.
+                      overflowX: canvasRadius > 0 ? 'auto' : undefined,
+                      overflowY: canvasRadius > 0 ? 'hidden' : undefined,
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
+                    }}
+                  >
                     <EmailLayoutContext.Provider value={{ canvasWidth: effectiveCanvasWidth }}>
-                      {childrenIds.map((childId) => (
-                        <ReaderBlock key={childId} id={childId} />
-                      ))}
+                      <EmailBoxProvider width={effectiveCanvasWidth - 2 * borderWidth} background={canvasBackground}>
+                        <TypographyProvider value={typography}>
+                          {childrenIds.map((childId) => (
+                            <ReaderBlock key={childId} id={childId} />
+                          ))}
+                        </TypographyProvider>
+                      </EmailBoxProvider>
                     </EmailLayoutContext.Provider>
                   </td>
                 </tr>

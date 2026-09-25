@@ -11,7 +11,7 @@ import theme from './theme.js';
 import { resolveApiBaseUrl } from './utils/resolveApiBaseUrl.js';
 import {
   useDocument,
-  resetDocument,
+  loadDocument,
   setReadOnly,
   getEditorState,
   setSelectedMainTab,
@@ -21,7 +21,10 @@ import {
   setHostEventDispatcher,
   setApiBaseUrl,
   showToast,
+  hydrateDocumentImageDimensions,
+  setBackgroundUpdateScheduler,
   EmailBuilderDefaults,
+  TDocumentCommit,
   ToastSeverity,
 } from './documents/editor/EditorContext.js';
 import renderToStaticMarkup from './renderers/renderToStaticMarkup.js';
@@ -51,10 +54,11 @@ function EmailBuilderRoot({ host, apiBaseUrl }: { host: EmailBuilderEditor, apiB
   // Keep reference for public methods
   useEffect(() => {
     latestDocRef.current = document;
-    host.__setLatest(document, html);
+    const origin = host.__isProgrammatic() ? 'programmatic' : 'user';
+    host.__setLatest(document, html, origin);
     host.dispatchEvent(
       new CustomEvent('emailContentChange', {
-        detail: { html, document, origin: host.__isProgrammatic() ? 'programmatic' : 'user' },
+        detail: { html, document, origin },
         bubbles: true,
         composed: true,
       })
@@ -97,14 +101,41 @@ class EmailBuilderEditor extends HTMLElement {
   private _readOnlySnapshot: { selectedMainTab: ReturnType<typeof getEditorState>['selectedMainTab']; inspectorDrawerOpen: boolean } | null = null;
   private _attributeSync = false;
   private _readOnlyMode = false;
+  private _userChangeCount = 0; // Content changes reported to the host with origin 'user'
+  private _unregisterBackgroundUpdates: (() => void) | null = null;
 
   // Called by React side to update cached values
-  public __setLatest(document: any, html: string) {
+  public __setLatest(document: any, html: string, origin: 'programmatic' | 'user' = 'user') {
     this._latestDocument = document;
     this._latestHtml = html;
+    if (origin === 'user') this._userChangeCount += 1;
   }
   // Internal accessor used by React effect for event origin determination
   public __isProgrammatic() { return this._isProgrammaticImport; }
+
+  // Background document updates the user did not make (e.g. image sizes backfilled after a load)
+  // are reported to the host as 'programmatic', like an import. Exception: if the user edited while
+  // the work was running, the host already holds a user-changed document and ignores programmatic
+  // events, so the update is reported with those edits ('user') to make sure it reaches the host.
+  // Once this editor has been removed nothing is applied: the store is shared, so an editor that
+  // replaced it would report the update as its own user change.
+  private __beginBackgroundUpdate(): TDocumentCommit {
+    const userChangesAtStart = this._userChangeCount;
+    return (apply) => {
+      if (!this.isConnected) return;
+      if (this._userChangeCount !== userChangesAtStart) {
+        apply();
+        return;
+      }
+      this._isProgrammaticImport = true;
+      try {
+        apply();
+      } catch (e) {
+        console.error(e);
+      }
+      queueMicrotask(() => { this._isProgrammaticImport = false; });
+    };
+  }
 
   static get observedAttributes() {
     return ['readonly', 'defaults'];
@@ -139,6 +170,8 @@ class EmailBuilderEditor extends HTMLElement {
     this._container.style.height = '100%';
     this.appendChild(this._container);
 
+    this._unregisterBackgroundUpdates = setBackgroundUpdateScheduler(() => this.__beginBackgroundUpdate());
+
     this._root = ReactDOM.createRoot(this._container);
     this._root.render(
       <React.StrictMode>
@@ -165,7 +198,7 @@ class EmailBuilderEditor extends HTMLElement {
       if (!this._pendingConfig && !this._pendingHtml) {
         this._isProgrammaticImport = true;
         try {
-          resetDocument(this.__buildEmptyDocument() as any);
+          loadDocument(this.__buildEmptyDocument() as any);
         } catch (e) {
           console.error(e);
         }
@@ -175,6 +208,9 @@ class EmailBuilderEditor extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Leaves the scheduler alone if an editor connected since has registered its own.
+    this._unregisterBackgroundUpdates?.();
+    this._unregisterBackgroundUpdates = null;
     if (this._root) {
       this._root.unmount();
       this._root = null;
@@ -236,7 +272,7 @@ class EmailBuilderEditor extends HTMLElement {
 
       this._isProgrammaticImport = true;
       try {
-        resetDocument(this.__buildEmptyDocument() as any);
+        loadDocument(this.__buildEmptyDocument() as any);
       } catch (e) {
         console.error(e);
       }
@@ -292,7 +328,10 @@ class EmailBuilderEditor extends HTMLElement {
     }
     this._isProgrammaticImport = true;
     try {
-      resetDocument(config as any);
+      loadDocument(config as any);
+      // Documents saved before image sizes were recorded lack them; probe and backfill in the
+      // background (reported as 'programmatic', see __beginBackgroundUpdate).
+      void hydrateDocumentImageDimensions();
     } catch (e) {
       console.error('Failed to set configuration in EmailBuilderEditor', e);
     }
@@ -333,7 +372,7 @@ class EmailBuilderEditor extends HTMLElement {
 
     // Replace document entirely
     try {
-      resetDocument(newDocument as any);
+      loadDocument(newDocument as any);
       // emailContentChange event will fire from React effect when state updates.
     } catch (e) {
       console.error('Failed to set HTML in EmailBuilderEditor', e);

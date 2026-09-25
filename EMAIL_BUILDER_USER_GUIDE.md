@@ -160,6 +160,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - **Canvas width** - Email width: Standard (600px) or Wide (900px)
 - **Font family** - Default typeface for entire email
 - **Text colour** - Default text colour
+- **Link colour** (optional) - Colour of links in the email. Leave empty for the standard link blue (#0000EE). Setting it explicitly makes links look the same in every email client (Gmail, Outlook and others otherwise each use their own blue)
 
 **When to use:**
 - Set global typography preferences
@@ -316,6 +317,8 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - Use containers to organise visual sections
 - Combine with text/image blocks inside
 - Apply background colours for emphasis
+- When using a border radius, keep the padding at least as large as the radius so content stays clear of the rounded corners
+- Classic Outlook (desktop) does not support rounded corners, so containers and the email canvas show square corners there
 
 ---
 
@@ -324,7 +327,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 
 **Configuration Options:**
 - **Number of columns** - 2 or 3 columns
-- **Column widths** - Custom width for each column
+- **Column widths** - Custom width for each column's content. Columns without a width share the remaining space; if the widths don't fit (or every column has one), they are scaled to fill the row
 - **Columns gap** - Space between columns (px)
 - **Stack on mobile** - On (default): columns collapse to a single stacked column on narrow/mobile screens. Off: columns stay side-by-side on every device.
 - **Alignment** - Vertical alignment (top/middle/bottom)

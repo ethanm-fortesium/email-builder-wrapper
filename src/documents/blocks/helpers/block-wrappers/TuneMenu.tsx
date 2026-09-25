@@ -241,12 +241,19 @@ export default function TuneMenu({ blockId }: Props) {
   const defaults = useDefaults();
   const canSaveAsDefault = block?.type === 'Signature';
 
+  // The logo's natural size is recorded from its URL, not chosen by the user, so it does not
+  // count when comparing against the saved default (defaults saved before it existed lack it).
+  const withoutLogoSize = (props: Record<string, unknown> | null | undefined) => {
+    if (!props) return null;
+    const { logoNaturalWidth: _width, logoNaturalHeight: _height, ...rest } = props;
+    return rest;
+  };
   const isCurrentDefaultSignature =
     canSaveAsDefault &&
     !!defaults?.signature &&
     stableEqual(
-      { props: block?.data?.props ?? null, style: block?.data?.style ?? null },
-      { props: defaults.signature.props ?? null, style: defaults.signature.style ?? null }
+      { props: withoutLogoSize(block?.data?.props), style: block?.data?.style ?? null },
+      { props: withoutLogoSize(defaults.signature.props), style: defaults.signature.style ?? null }
     );
 
   const handleSaveAsDefaultClick = () => {

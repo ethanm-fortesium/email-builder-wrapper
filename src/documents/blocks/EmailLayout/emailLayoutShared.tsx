@@ -1,3 +1,7 @@
+import type { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
+import { DEFAULT_TYPOGRAPHY, resolveTypography } from '../helpers/emailTypography.js';
+import { DEFAULT_FONT_FAMILY_KEY, getFontFamilyEntry } from '../helpers/fontFamily.js';
+
 export const DEFAULT_CANVAS_WIDTH = 600;
 export const MIN_CANVAS_WIDTH = 480;
 export const MAX_CANVAS_WIDTH = 900;
@@ -7,28 +11,25 @@ export function clampCanvasWidth(n: number | null | undefined) {
   return Math.min(MAX_CANVAS_WIDTH, Math.max(MIN_CANVAS_WIDTH, n));
 }
 
-import type { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
+/** CSS font stack for a layout font key (single source of truth: helpers/fontFamily.ts). */
+export function getFontFamily(fontFamily: EmailLayoutProps['fontFamily']) {
+  return (getFontFamilyEntry(fontFamily) ?? getFontFamilyEntry(DEFAULT_FONT_FAMILY_KEY)!).value;
+}
 
-export function getFontFamily(fontFamily: EmailLayoutProps['fontFamily'])  {
-const f = fontFamily ?? 'MODERN_SANS';
-  switch (f) {
-    case 'MODERN_SANS':
-      return '"Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif';
-    case 'BOOK_SANS':
-      return 'Optima, Candara, "Noto Sans", source-sans-pro, sans-serif';
-    case 'ORGANIC_SANS':
-      return 'Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans", source-sans-pro, sans-serif';
-    case 'GEOMETRIC_SANS':
-      return 'Avenir, "Avenir Next LT Pro", Montserrat, Corbel, "URW Gothic", source-sans-pro, sans-serif';
-    case 'HEAVY_SANS':
-      return 'Bahnschrift, "DIN Alternate", "Franklin Gothic Medium", "Nimbus Sans Narrow", sans-serif-condensed, sans-serif';
-    case 'ROUNDED_SANS':
-      return 'ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri, source-sans-pro, sans-serif';
-    case 'MODERN_SERIF':
-      return 'Charter, "Bitstream Charter", "Sitka Text", Cambria, serif';
-    case 'BOOK_SERIF':
-      return '"Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, serif';
-    case 'MONOSPACE':
-      return '"Nimbus Mono PS", "Courier New", "Cutive Mono", monospace';
-  }
+/**
+ * Resolve the layout-level typography every block starts from.
+ *
+ * Lives here rather than in EmailLayoutReader so the editor (and the renderer) can use it
+ * without importing the Reader tree.
+ *
+ * @param props - EmailLayout props (font family key, base font size, text and link colours).
+ * @returns The resolved Typography provided to all blocks.
+ */
+export function getLayoutTypography(props: EmailLayoutProps) {
+  return resolveTypography(DEFAULT_TYPOGRAPHY, {
+    fontFamily: props.fontFamily ?? DEFAULT_FONT_FAMILY_KEY,
+    fontSize: props.baseFontSize ?? 16,
+    color: props.textColor ?? '#262626',
+    linkColor: props.linkColor,
+  });
 }

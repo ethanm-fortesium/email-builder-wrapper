@@ -1,5 +1,14 @@
 import DOMPurify from 'dompurify';
 
+import {
+  EmailHtmlContext,
+  QUILL_INDENT_STEP_EM,
+  QUILL_ITEM_GAP_EM,
+  QUILL_LIST_INDENT_EM,
+  QUILL_LIST_MARGIN_BOTTOM_EM,
+  normaliseEmailElement,
+} from '../helpers/emailHtmlNormaliser.js';
+
 type SanitizeOptions = Parameters<typeof DOMPurify.sanitize>[1];
 
 export type RichTextDecorateOptions = {
@@ -7,6 +16,13 @@ export type RichTextDecorateOptions = {
   decorateParagraphs?: boolean;
   decorateLists?: boolean;
   promoteListItemColors?: boolean;
+  /**
+   * Exported email only: the typography, width and background the rich text renders into.
+   * Lists, links, images and line heights are then normalised for classic Outlook
+   * (emailHtmlNormaliser 'quill' mode). Without it (editor canvas) the lists and links
+   * keep their editor decoration.
+   */
+  email?: EmailHtmlContext;
 };
 
 const BASE_CONFIG = {
@@ -105,8 +121,8 @@ const applyListStyling = (root: ParentNode, options?: { promoteListItemColors?: 
     const element = list as Element;
     appendStyleIfMissingMany(element, [
       { property: 'list-style', declaration: 'list-style:disc' },
-      { property: 'margin', declaration: 'margin:0 0 1em' },
-      { property: 'padding-left', declaration: 'padding-left:1.5em' },
+      { property: 'margin', declaration: `margin:0 0 ${QUILL_LIST_MARGIN_BOTTOM_EM}em` },
+      { property: 'padding-left', declaration: `padding-left:${QUILL_LIST_INDENT_EM}em` },
       { property: 'color', declaration: 'color:inherit' },
     ]);
   });
@@ -115,8 +131,8 @@ const applyListStyling = (root: ParentNode, options?: { promoteListItemColors?: 
     const element = list as Element;
     appendStyleIfMissingMany(element, [
       { property: 'list-style', declaration: 'list-style:decimal' },
-      { property: 'margin', declaration: 'margin:0 0 1em' },
-      { property: 'padding-left', declaration: 'padding-left:1.5em' },
+      { property: 'margin', declaration: `margin:0 0 ${QUILL_LIST_MARGIN_BOTTOM_EM}em` },
+      { property: 'padding-left', declaration: `padding-left:${QUILL_LIST_INDENT_EM}em` },
       { property: 'color', declaration: 'color:inherit' },
     ]);
   });
@@ -125,7 +141,7 @@ const applyListStyling = (root: ParentNode, options?: { promoteListItemColors?: 
     const element = item as HTMLLIElement;
     appendStyleIfMissingMany(element, [
       { property: 'list-style-position', declaration: 'list-style-position:outside' },
-      { property: 'margin-bottom', declaration: 'margin-bottom:0.5em' },
+      { property: 'margin-bottom', declaration: `margin-bottom:${QUILL_ITEM_GAP_EM}em` },
       { property: 'color', declaration: 'color:inherit' },
     ]);
     if (promoteListItemColors) {
@@ -138,7 +154,7 @@ const applyListStyling = (root: ParentNode, options?: { promoteListItemColors?: 
     const matches = element.className.match(/ql-indent-(\d+)/);
     if (!matches) return;
     const level = Number(matches[1]) || 0;
-    appendStyle(element, `margin-left:${level * 3}em`);
+    appendStyle(element, `margin-left:${level * QUILL_INDENT_STEP_EM}em`);
   });
 };
 
@@ -244,6 +260,7 @@ export const decorateRichTextForEmail = (sanitizedHtml: string, options?: RichTe
     decorateParagraphs = true,
     decorateLists = true,
     promoteListItemColors = true,
+    email,
   } = options || {};
 
   // `sanitizedHtml` is already DOMPurify-sanitized; we only need DOM parsing here.
@@ -256,8 +273,15 @@ export const decorateRichTextForEmail = (sanitizedHtml: string, options?: RichTe
   normalizeNbsp(container);
 
   if (decorateParagraphs) applyParagraphStyling(container);
-  if (decorateLists) applyListStyling(container, { promoteListItemColors });
   if (decorateLinks) applyLinkStyling(container);
+  if (email) {
+    if (promoteListItemColors) {
+      container.querySelectorAll('li').forEach(promoteUniformInlineColorToListItem);
+    }
+    normaliseEmailElement(container, { mode: 'quill', ...email });
+  } else if (decorateLists) {
+    applyListStyling(container, { promoteListItemColors });
+  }
 
   return container.innerHTML;
 };
@@ -265,13 +289,16 @@ export const decorateRichTextForEmail = (sanitizedHtml: string, options?: RichTe
 /**
  * Backwards-compatible API: sanitize + decorate (lists/paragraphs always; links optional).
  * Prefer `sanitizeRichTextHtml` + `decorateRichTextForEmail` for better performance.
+ *
+ * @param options.email - Normalise for the exported email (see RichTextDecorateOptions.email).
  */
-export const sanitizeRichText = (html: string, options?: { decorateLinks?: boolean }): string => {
+export const sanitizeRichText = (html: string, options?: { decorateLinks?: boolean; email?: EmailHtmlContext }): string => {
   const sanitized = sanitizeRichTextHtml(html);
   return decorateRichTextForEmail(sanitized, {
     decorateLinks: Boolean(options?.decorateLinks),
     decorateParagraphs: true,
     decorateLists: true,
     promoteListItemColors: true,
+    email: options?.email,
   });
 };

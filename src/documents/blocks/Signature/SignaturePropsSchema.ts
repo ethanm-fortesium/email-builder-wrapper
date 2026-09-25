@@ -44,6 +44,10 @@ const SignaturePropsSchema = z.object({
       website: z.string().optional().nullable(),
       logoUrl: z.string().optional().nullable(),
       logoWidth: z.number().int().min(24).max(600).optional().nullable(),
+      // Intrinsic pixel size of the image at `logoUrl`, so the exported <img> can carry a height
+      // attribute matching `logoWidth` (classic Outlook ignores CSS sizing on images).
+      logoNaturalWidth: z.number().int().positive().optional().nullable(),
+      logoNaturalHeight: z.number().int().positive().optional().nullable(),
       social: SocialSchema,
       disclaimerHtml: z.string().optional().nullable(),
     })

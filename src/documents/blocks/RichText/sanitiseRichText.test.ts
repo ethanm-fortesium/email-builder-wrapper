@@ -7,6 +7,9 @@ import {
   sanitizeRichText,
   decorateRichTextForEmail,
 } from './sanitiseRichText.js';
+import { DEFAULT_TYPOGRAPHY } from '../helpers/emailTypography.js';
+
+const EMAIL = { typography: DEFAULT_TYPOGRAPHY, width: 552, background: '#FFFFFF' };
 
 // ---------------------------------------------------------------------------
 // &nbsp; normalisation
@@ -143,5 +146,42 @@ describe('sanitizeRichText (full pipeline)', () => {
     const result = sanitizeRichText(input);
     expect(result).not.toContain('<script');
     expect(result).toContain('safe');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Exported email (normalised for classic Outlook)
+// ---------------------------------------------------------------------------
+describe('sanitizeRichText for the exported email', () => {
+  const input =
+    '<p>Hi {{RecipientFirstName}}, <a href="https://example.com" target="_blank">link</a></p><p><br></p>' +
+    '<ul><li>one</li><li class="ql-indent-1"><span style="color: rgb(230, 0, 0);">red</span></li></ul>';
+
+  it('keeps the Outlook-only list wrapper comments', () => {
+    const result = sanitizeRichText(input, { decorateLinks: true, email: EMAIL });
+    expect(result).toContain('<!--[if mso]><div style="margin-left:-24px"><![endif]--><ul');
+    expect(result).toContain('</ul><!--[if mso]></div><![endif]-->');
+  });
+
+  it('styles links and lists for email instead of the editor decoration', () => {
+    const result = sanitizeRichText(input, { decorateLinks: true, email: EMAIL });
+    expect(result).toContain('style="color:#0000EE;text-decoration:underline"');
+    expect(result).toContain('margin-left:48px');
+    expect(result).toMatch(/<li class="ql-indent-1" style="color:rgb\(230, 0, 0\)/);
+    expect(result).not.toContain('inherit');
+    expect(result).toContain('Hi {{RecipientFirstName}}');
+  });
+
+  it('is idempotent', () => {
+    const once = sanitizeRichText(input, { decorateLinks: true, email: EMAIL });
+    expect(sanitizeRichText(once, { decorateLinks: true, email: EMAIL })).toBe(once);
+  });
+
+  it('leaves the editor decoration unchanged without an email context', () => {
+    const result = sanitizeRichText(input, { decorateLinks: true });
+    expect(result).toContain('list-style:disc');
+    expect(result).toContain('margin-left:3em');
+    expect(result).not.toContain('[if mso]');
+    expect(result).not.toContain('#0000EE');
   });
 });

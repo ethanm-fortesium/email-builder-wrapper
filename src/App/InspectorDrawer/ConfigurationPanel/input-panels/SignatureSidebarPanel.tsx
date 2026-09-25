@@ -4,6 +4,7 @@ import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import TextInput from './helpers/inputs/TextInput.js';
 import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
 import SliderInput from './helpers/inputs/SliderInput.js';
+import useNaturalImageDimensions from './helpers/useNaturalImageDimensions.js';
 import { AspectRatioOutlined } from '@mui/icons-material';
 import SignaturePropsSchema, { SignatureProps } from '../../../../documents/blocks/Signature/SignaturePropsSchema.js';
 import { resolveApiBaseUrl } from '../../../../utils/resolveApiBaseUrl.js';
@@ -37,6 +38,9 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
   const style = data.style;
   const [uploading, setUploading] = useState(false);
 
+  // Record the logo's intrinsic size whenever its URL changes (the export needs it for Outlook).
+  useNaturalImageDimensions(props.logoUrl, Boolean(props.logoNaturalWidth && props.logoNaturalHeight));
+
   const handleUpload = async (file: File) => {
     setUploading(true);
     const formData = new FormData();
@@ -60,7 +64,8 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
       const uploadedUrl = new URL(json.payload[0].url, uploadBase);
       uploadedUrl.searchParams.set('download', 'false');
       const url = uploadedUrl.toString();
-      updateData({ ...data, props: { ...props, logoUrl: url } });
+      // The previous logo's size no longer applies; it is re-probed for the new URL.
+      updateData({ ...data, props: { ...props, logoUrl: url, logoNaturalWidth: null, logoNaturalHeight: null } });
     } catch (e) {
       console.error(e);
       alert('Logo upload failed');
@@ -105,6 +110,8 @@ export default function SignatureSidebarPanel({ data, setData, apiBaseUrl }: Pro
         ...rest,
         logoUrl: null,
         logoWidth: null,
+        logoNaturalWidth: null,
+        logoNaturalHeight: null,
       },
     });
   };

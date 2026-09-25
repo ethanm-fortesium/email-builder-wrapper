@@ -6,7 +6,6 @@ import { ButtonPropsSchema } from '@usewaypoint/block-button';
 import { DividerPropsSchema } from '@usewaypoint/block-divider';
 import { HeadingPropsSchema } from '@usewaypoint/block-heading';
 import { HtmlPropsSchema } from '@usewaypoint/block-html';
-import { ImagePropsSchema } from '@usewaypoint/block-image';
 import { SpacerPropsSchema } from '@usewaypoint/block-spacer';
 import { TextPropsSchema } from '@usewaypoint/block-text';
 import {
@@ -26,6 +25,7 @@ import ButtonReader from '../documents/blocks/Button/ButtonReader.js';
 import DividerReader from '../documents/blocks/Divider/DividerReader.js';
 import HeadingReader from '../documents/blocks/Heading/HeadingReader.js';
 import HtmlReader from '../documents/blocks/Html/HtmlReader.js';
+import ImagePropsSchema from '../documents/blocks/Image/ImagePropsSchema.js';
 import ImageReader from '../documents/blocks/Image/ImageReader.js';
 import SpacerReader from '../documents/blocks/Spacer/SpacerReader.js';
 import TextReader from '../documents/blocks/Text/TextReader.js';

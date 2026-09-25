@@ -1,27 +1,77 @@
 import React from 'react';
-import { z } from 'zod';
 
-import { Image as BaseImage, ImagePropsSchema } from '@usewaypoint/block-image';
-
+import { useEmailLayoutContext } from '../EmailLayout/EmailLayoutContext.js';
+import { insetWidth, useEmailBox } from '../helpers/emailBox.js';
 import { EmailTable } from '../helpers/emailTable.js';
+import { useTypography } from '../helpers/emailTypography.js';
+import { IMAGE_CONTAINER_STYLE, IMAGE_RESET_STYLE, computeImageBox, imageAltStyle, wordImageLimit } from '../helpers/imageBox.js';
 
-export type ImageProps = z.infer<typeof ImagePropsSchema>;
+import { ImageProps } from './ImagePropsSchema.js';
+
+export type { ImageProps };
 
 /**
- * Render an image inside an email-compatible table, applying wrapper padding and background to the table while forwarding remaining style to the inner image.
+ * Render an Image block for email: an <img> inside an email-compatible table cell.
  *
- * @param style - Optional style object; if `padding` is present it is applied to the table cell and removed from the inner image style. `backgroundColor`, if present, is applied to the table background.
- * @param props - Image properties forwarded to the underlying `BaseImage`.
- * @returns A React element containing an `EmailTable` that wraps a `BaseImage` with adjusted styles.
+ * The img carries width/height attributes for classic Outlook (which sizes images only from them),
+ * clamped to the cell and keeping the image's aspect ratio, and a fluid CSS size for every other
+ * client (see computeImageBox). The image sits in a font-size:0 container so no text strut is
+ * added around it and Word never clips it to a line; its alt text carries its own typography.
+ *
+ * @param style - Block style: padding and background colour go on the table cell, textAlign aligns the image.
+ * @param props - Image props: url, alt, linkHref, width/height, recorded natural size and vertical alignment.
+ * @returns The image block, or nothing when no image URL is set (no broken image in the email).
  */
 export default function ImageReader({ style, props }: ImageProps) {
-  const cellPadding = style?.padding ?? undefined;
-  const backgroundColor = style?.backgroundColor ?? undefined;
-  const innerStyle = style ? { ...style, padding: undefined, backgroundColor: undefined } : undefined;
+  const emailBox = useEmailBox();
+  const { canvasWidth } = useEmailLayoutContext();
+  const typography = useTypography();
+
+  const url = props?.url?.trim();
+  if (!url) {
+    return <></>;
+  }
+
+  const align = style?.textAlign ?? 'left';
+  const box = computeImageBox({
+    width: props?.width,
+    height: props?.height,
+    naturalWidth: props?.naturalWidth,
+    naturalHeight: props?.naturalHeight,
+    attrMaxWidth: wordImageLimit(insetWidth(emailBox.width, style?.padding), canvasWidth),
+    cssMaxWidth: canvasWidth,
+  });
+
+  const image = (
+    <img
+      src={url}
+      alt={props?.alt ?? ''}
+      width={box.attrWidth}
+      height={box.attrHeight}
+      border={0}
+      style={{
+        display: 'inline-block',
+        verticalAlign: props?.contentAlignment ?? 'middle',
+        width: box.cssWidth !== undefined ? `${box.cssWidth}px` : undefined,
+        maxWidth: '100%',
+        height: box.cssHeight === 'auto' ? 'auto' : `${box.cssHeight}px`,
+        ...IMAGE_RESET_STYLE,
+        ...imageAltStyle(typography),
+      }}
+    />
+  );
 
   return (
-    <EmailTable backgroundColor={backgroundColor} padding={cellPadding as any}>
-      <BaseImage style={innerStyle as any} props={props} />
+    <EmailTable backgroundColor={style?.backgroundColor} padding={style?.padding} align={align}>
+      <div style={{ textAlign: align, ...IMAGE_CONTAINER_STYLE }}>
+        {props?.linkHref ? (
+          <a href={props.linkHref} target="_blank" style={{ textDecoration: 'none' }}>
+            {image}
+          </a>
+        ) : (
+          image
+        )}
+      </div>
     </EmailTable>
   );
 }

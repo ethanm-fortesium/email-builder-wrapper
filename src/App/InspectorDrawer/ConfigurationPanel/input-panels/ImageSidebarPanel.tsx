@@ -6,13 +6,14 @@ import {
   VerticalAlignTopOutlined,
 } from '@mui/icons-material';
 import { Stack, ToggleButton } from '@mui/material';
-import { ImageProps, ImagePropsSchema } from '@usewaypoint/block-image';
 
 import BaseSidebarPanel from './helpers/BaseSidebarPanel.js';
 import RadioGroupInput from './helpers/inputs/RadioGroupInput.js';
 import TextDimensionInput from './helpers/inputs/TextDimensionInput.js';
 import TextInput from './helpers/inputs/TextInput.js';
 import MultiStylePropertyPanel from './helpers/style-inputs/MultiStylePropertyPanel.js';
+import useNaturalImageDimensions from './helpers/useNaturalImageDimensions.js';
+import ImagePropsSchema, { ImageProps } from '../../../../documents/blocks/Image/ImagePropsSchema.js';
 import type { TStyle } from '../../../../documents/blocks/helpers/TStyle.js';
 import { resolveApiBaseUrl } from '../../../../utils/resolveApiBaseUrl.js';
 
@@ -47,6 +48,9 @@ export default function ImageSidebarPanel({ data, setData, apiBaseUrl }: ImageSi
     }
   };
 
+  // Record the image's intrinsic size whenever its URL changes (the export needs it for Outlook).
+  useNaturalImageDimensions(data.props?.url, Boolean(data.props?.naturalWidth && data.props?.naturalHeight));
+
   const handleUpload = async (file: File) => {
     setUploading(true);
 
@@ -74,8 +78,8 @@ export default function ImageSidebarPanel({ data, setData, apiBaseUrl }: ImageSi
       uploadedUrl.searchParams.set('download', 'false');
       const url = uploadedUrl.toString();
 
-      // Update the block's data
-      updateData({ ...data, props: { ...data.props, url } });
+      // Update the block's data; the previous image's size no longer applies and is re-probed.
+      updateData({ ...data, props: { ...data.props, url, naturalWidth: null, naturalHeight: null } });
     } catch (err) {
       console.error(err);
       alert('Image upload failed. See console for details.');

@@ -25,10 +25,10 @@ type EmailLayoutSidebarFieldsProps = {
 /**
  * Renders the Global sidebar fields for editing email layout properties and propagates validated updates.
  *
- * The "Save layout as default" button captures the complete
- * set of layout fields (font, font size, text colour, canvas width, canvas / backdrop / border colour,
- * border radius) and dispatches them as a single payload; the matches-default star fills when every
- * field on this email exactly equals the saved layout default.
+ * The "Save layout as default" button captures the layout fields the host stores as defaults
+ * (font, font size, text colour, canvas width, canvas / backdrop / border colour, border radius) and
+ * dispatches them as a single payload; the matches-default star fills when every one of those fields
+ * on this email exactly equals the saved layout default. Link colour is a per-email setting.
  */
 export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutSidebarFieldsProps) {
   const [, setErrors] = useState<ZodError | null>(null);
@@ -132,6 +132,11 @@ export default function EmailLayoutSidebarFields({ data, setData }: EmailLayoutS
         label="Text colour"
         defaultValue={effectiveTextColor}
         onChange={(textColor) => updateData({ ...data, textColor })}
+      />
+      <NullableColorInput
+        label="Link colour"
+        defaultValue={data.linkColor ?? null}
+        onChange={(linkColor) => updateData({ ...data, linkColor })}
       />
       <Button
         size="small"

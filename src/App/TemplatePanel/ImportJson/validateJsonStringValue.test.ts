@@ -187,6 +187,40 @@ describe('validateJsonStringValue – individual block types', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Recorded natural image sizes (needed by the Outlook export) survive import
+// ---------------------------------------------------------------------------
+
+describe('validateJsonStringValue – natural image sizes', () => {
+  it('keeps naturalWidth/naturalHeight on Image and logoNatural* on Signature', () => {
+    const imageProps = { url: 'https://cdn.test/hero.png', width: 600, naturalWidth: 1200, naturalHeight: 400 };
+    const signatureProps = { ...signatureBlockData.props, logoNaturalWidth: 564, logoNaturalHeight: 260 };
+    const result = validateJsonStringValue(
+      makeJson({
+        'block-1': { type: 'Image', data: { props: imageProps } },
+        'block-2': { type: 'Signature', data: { ...signatureBlockData, props: signatureProps } },
+      }),
+    );
+    expect(result.error).toBeUndefined();
+    expect((result.data?.['block-1'].data as any).props).toMatchObject(imageProps);
+    expect((result.data?.['block-2'].data as any).props).toMatchObject({ logoNaturalWidth: 564, logoNaturalHeight: 260 });
+  });
+
+  it('accepts legacy image blocks without a recorded size', () => {
+    const result = validateJsonStringValue(
+      makeJson({ 'block-1': { type: 'Image', data: { props: { url: 'https://cdn.test/hero.png' } } } }),
+    );
+    expect(result.error).toBeUndefined();
+  });
+
+  it('rejects an invalid recorded size', () => {
+    const result = validateJsonStringValue(
+      makeJson({ 'block-1': { type: 'Image', data: { props: { url: 'x', naturalHeight: 0 } } } }),
+    );
+    expect(result.error).toBe('Invalid JSON schema');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Return shape
 // ---------------------------------------------------------------------------
 

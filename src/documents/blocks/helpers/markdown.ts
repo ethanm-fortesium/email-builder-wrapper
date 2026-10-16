@@ -77,6 +77,32 @@ class EmailMarkdownRenderer extends Renderer {
   }
 }
 
+// Inline markdown (Table cells): formatting and links only, no blocks, images or styles.
+const INLINE_ALLOWED_TAGS = ['a', 'b', 'br', 'code', 'del', 'em', 'i', 's', 'strong', 'u'];
+const INLINE_ALLOWED_ATTRIBUTES: Record<string, string[]> = { a: ['href', 'target', 'title'] };
+
+/**
+ * Render inline markdown (bold, italic, strikethrough, code, links; line breaks become <br>)
+ * to sanitised HTML with no block elements, for content that sits directly in a table cell.
+ *
+ * @param markdown - Markdown source (GFM, single newlines become <br>).
+ * @returns HTML restricted to inline formatting and links.
+ */
+export function renderInlineMarkdown(markdown: string) {
+  const html = marked.parseInline(markdown, {
+    async: false,
+    breaks: true,
+    gfm: true,
+    pedantic: false,
+    silent: false,
+    renderer: new EmailMarkdownRenderer(),
+  });
+  if (typeof html !== 'string') {
+    throw new Error('marked.parseInline did not return a string');
+  }
+  return insane(html, { allowedTags: INLINE_ALLOWED_TAGS, allowedAttributes: INLINE_ALLOWED_ATTRIBUTES });
+}
+
 /**
  * Render markdown to sanitised HTML exactly as the upstream markdown Text block does.
  *

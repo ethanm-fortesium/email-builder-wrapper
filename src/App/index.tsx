@@ -2,9 +2,15 @@ import React from 'react';
 
 import { Alert, Snackbar, Stack, useTheme } from '@mui/material';
 
-import { dismissToast, useInspectorDrawerOpen, useToast } from '../documents/editor/EditorContext.js';
+import {
+  dismissToast,
+  useInspectorDrawerOpen,
+  useInspectorDrawerResizing,
+  useInspectorDrawerWidth,
+  useToast,
+} from '../documents/editor/EditorContext.js';
 
-import InspectorDrawer, { INSPECTOR_DRAWER_WIDTH } from './InspectorDrawer/index.js';
+import InspectorDrawer from './InspectorDrawer/index.js';
 import TemplatePanel from './TemplatePanel/index.js';
 
 function useDrawerTransition(cssProperty: 'margin-left' | 'margin-right', open: boolean) {
@@ -21,6 +27,8 @@ interface AppProps {
 
 export default function App({ apiBaseUrl }: AppProps) {
   const inspectorDrawerOpen = useInspectorDrawerOpen();
+  const inspectorDrawerWidth = useInspectorDrawerWidth();
+  const inspectorDrawerResizing = useInspectorDrawerResizing();
   const toast = useToast();
 
   const marginRightTransition = useDrawerTransition('margin-right', inspectorDrawerOpen);
@@ -31,8 +39,9 @@ export default function App({ apiBaseUrl }: AppProps) {
 
       <Stack
         sx={{
-          marginRight: inspectorDrawerOpen ? `${INSPECTOR_DRAWER_WIDTH}px` : 0,
-          transition: [ marginRightTransition],
+          marginRight: inspectorDrawerOpen ? `${inspectorDrawerWidth}px` : 0,
+          // No easing while the drawer's edge is dragged: the canvas follows the pointer.
+          transition: inspectorDrawerResizing ? 'none' : marginRightTransition,
         }}
       >
         <TemplatePanel />

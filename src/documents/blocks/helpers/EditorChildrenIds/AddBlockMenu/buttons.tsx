@@ -10,6 +10,7 @@ import {
   LibraryAddOutlined,
   NotesOutlined,
   SmartButtonOutlined,
+  TableChartOutlined,
   ViewColumnOutlined,
   ContactMailOutlined,
   WysiwygOutlined,
@@ -206,6 +207,29 @@ export function getButtons(defaults?: EmailBuilderDefaults | null): TButtonProps
         type: 'RichText',
         data: {
           props: { html: '<p>This is a <strong>rich text</strong> block. You can edit <em>font styles</em>, <u>links</u>, and more!</p>' },
+          // No explicit fontSize / fontFamily — inherits from EmailLayout.
+          style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
+        },
+      }),
+    },
+    {
+      label: 'Table',
+      icon: <TableChartOutlined />,
+      block: () => ({
+        type: 'Table',
+        data: {
+          props: {
+            rows: [
+              ['Item', 'Amount'],
+              ['Annual fee', '£120.00'],
+              ['Late fee', '£40.00'],
+            ],
+            columns: [null, { align: 'right' }],
+            headerRow: true,
+            borderStyle: 'rows',
+            borderColor: '#E4E7EC',
+            headerBackgroundColor: '#F2F4F7',
+          },
           // No explicit fontSize / fontFamily — inherits from EmailLayout.
           style: { padding: { top: 16, bottom: 16, left: 24, right: 24 } },
         },

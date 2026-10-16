@@ -29,6 +29,8 @@ import SignatureEditor from '../blocks/Signature/SignatureEditor.js';
 import SignaturePropsSchema from '../blocks/Signature/SignaturePropsSchema.js';
 import RichTextEditor from '../blocks/RichText/RichTextEditor.js';
 import RichTextPropsSchema from '../blocks/RichText/RichTextPropsSchema.js';
+import TableEditor from '../blocks/Table/TableEditor.js';
+import TablePropsSchema from '../blocks/Table/TablePropsSchema.js';
 
 const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
   Avatar: {
@@ -149,6 +151,14 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
     Component: (props) => (
       <EditorBlockWrapper>
         <RichTextEditor {...props} />
+      </EditorBlockWrapper>
+    ),
+  },
+  Table: {
+    schema: TablePropsSchema,
+    Component: (props) => (
+      <EditorBlockWrapper>
+        <TableEditor {...props} />
       </EditorBlockWrapper>
     ),
   },

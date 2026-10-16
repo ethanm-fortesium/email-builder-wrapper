@@ -18,6 +18,7 @@ import SpacerSidebarPanel from './input-panels/SpacerSidebarPanel.js';
 import TextSidebarPanel from './input-panels/TextSidebarPanel.js';
 import SignatureSidebarPanel from './input-panels/SignatureSidebarPanel.js';
 import RichTextSidebarPanel from './input-panels/RichTextSidebarPanel.js';
+import TableSidebarPanel from './input-panels/TableSidebarPanel.js';
 
 /**
  * Render a compact, dashed-border message box containing the given text.
@@ -87,6 +88,8 @@ export default function ConfigurationPanel({ apiBaseUrl }: { apiBaseUrl: string 
       return <SignatureSidebarPanel key={selectedBlockId} data={data} setData={(data: any) => setBlock({ type, data })} apiBaseUrl={apiBaseUrl} />;
     case 'RichText':
       return <RichTextSidebarPanel key={selectedBlockId} data={data} setData={(data: any) => setBlock({ type, data })} />;
+    case 'Table':
+      return <TableSidebarPanel key={selectedBlockId} data={data} setData={(data: any) => setBlock({ type, data })} />;
     default:
       return <pre>{JSON.stringify(block, null, '  ')}</pre>;
   }

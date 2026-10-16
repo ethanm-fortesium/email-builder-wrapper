@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import {
   AddBoxOutlined,
@@ -28,10 +28,11 @@ import {
   writeBlockToClipboard,
 } from '../blockClipboard.js';
 
+import useTuneMenuLeft from './useTuneMenuLeft.js';
+
 const sx: SxProps = {
   position: 'absolute',
   top: 0,
-  left: -56,
   borderRadius: 64,
   paddingX: 0.5,
   paddingY: 1,
@@ -43,6 +44,8 @@ type Props = {
 };
 export default function TuneMenu({ blockId }: Props) {
   const document = useDocument();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const left = useTuneMenuLeft(menuRef);
 
   const handleDeleteClick = () => {
     const filterChildrenIds = (childrenIds: string[] | null | undefined) => {
@@ -270,7 +273,7 @@ export default function TuneMenu({ blockId }: Props) {
   };
 
   return (
-    <Paper sx={sx} onClick={(ev) => ev.stopPropagation()}>
+    <Paper ref={menuRef} sx={{ ...sx, left }} onClick={(ev) => ev.stopPropagation()}>
       <Stack>
         <Tooltip title="Move up" placement="left-start">
           <IconButton onClick={() => handleMoveClick('up')} sx={{ color: 'text.primary' }}>

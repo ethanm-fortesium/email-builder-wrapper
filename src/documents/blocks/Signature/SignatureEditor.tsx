@@ -1,5 +1,6 @@
 import { EmailLayoutProps } from '../EmailLayout/EmailLayoutPropsSchema.js';
 import { clampCanvasWidth, getLayoutTypography } from '../EmailLayout/emailLayoutShared.js';
+import { enclosingBackground } from '../helpers/editorEmailBox.js';
 import { insetWidth } from '../helpers/emailBox.js';
 import { formatPadding } from '../helpers/emailTable.js';
 import { resolveFontFamily } from '../helpers/emailTypography.js';
@@ -7,7 +8,6 @@ import linkedinIconFallback from '../../../assets/social/linkedin.png';
 import facebookIconFallback from '../../../assets/social/facebook.png';
 import twitterIconFallback from '../../../assets/social/twitter.png';
 import instagramIconFallback from '../../../assets/social/instagram.png';
-import type { TEditorBlock, TEditorConfiguration } from '../../editor/core.js';
 import { useCurrentBlockId } from '../../editor/EditorBlock.js';
 import { getApiBaseUrl, useDocument } from '../../editor/EditorContext.js';
 
@@ -22,42 +22,6 @@ const BUNDLED_SOCIAL_ICONS: Record<SocialIcon, string> = {
   twitter: twitterIconFallback,
   instagram: instagramIconFallback,
 };
-
-/** Ids of the blocks directly inside a Container or ColumnsContainer (other blocks have no children). */
-function containerChildIds(block: TEditorBlock): string[] {
-  switch (block.type) {
-    case 'Container':
-      return block.data.props?.childrenIds ?? [];
-    case 'ColumnsContainer':
-      return block.data.props?.columns?.flatMap((column) => column.childrenIds) ?? [];
-    default:
-      return [];
-  }
-}
-
-/**
- * The background colour behind a block as the export resolves it (its email box): that of the
- * closest enclosing Container or ColumnsContainer that sets one.
- *
- * @param document - The editor document.
- * @param blockId - The block, or null outside a block.
- * @returns The colour, or null when no enclosing container sets one (the canvas colour shows through).
- */
-function enclosingBackground(document: TEditorConfiguration, blockId: string | null) {
-  const parents = new Map<string, string>();
-  for (const [id, block] of Object.entries(document)) {
-    containerChildIds(block).forEach((childId) => parents.set(childId, id));
-  }
-  const visited = new Set<string>();
-  for (let id = blockId ? parents.get(blockId) : undefined; id && !visited.has(id); id = parents.get(id)) {
-    visited.add(id);
-    const parent = document[id];
-    if ((parent.type === 'Container' || parent.type === 'ColumnsContainer') && parent.data.style?.backgroundColor) {
-      return parent.data.style.backgroundColor;
-    }
-  }
-  return null;
-}
 
 /**
  * Renders the Signature block on the editor canvas: the same markup the email export uses

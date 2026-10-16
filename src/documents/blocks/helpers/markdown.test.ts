@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Text } from '@usewaypoint/block-text';
 
-import { renderMarkdown } from './markdown.js';
+import { renderInlineMarkdown, renderMarkdown } from './markdown.js';
 
 /** The upstream markdown Text block's inner HTML (its wrapper div has no style when none is given). */
 function upstream(markdown: string) {
@@ -63,5 +63,29 @@ describe('renderMarkdown', () => {
     expect(html).not.toContain('<script');
     expect(html).not.toContain('onerror');
     expect(html).not.toContain('class=');
+  });
+});
+
+describe('renderInlineMarkdown', () => {
+  it('renders inline formatting and links without wrapping them in a paragraph', () => {
+    expect(renderInlineMarkdown('**Bold**, _italic_, ~~gone~~, `code` and [a link](https://example.com)')).toBe(
+      '<strong>Bold</strong>, <em>italic</em>, <del>gone</del>, <code>code</code> and <a href="https://example.com" target="_blank">a link</a>'
+    );
+  });
+
+  it('turns line breaks into <br>', () => {
+    expect(renderInlineMarkdown('Line one\nLine two')).toBe('Line one<br/>Line two');
+  });
+
+  it('keeps merge tokens intact, in text and in link targets', () => {
+    expect(renderInlineMarkdown('Hi {{Recipient_Name}}, see [{{Link}}]({{LinkUrl}})')).toBe(
+      'Hi {{Recipient_Name}}, see <a href="{{LinkUrl}}" target="_blank">{{Link}}</a>'
+    );
+  });
+
+  it('allows no blocks, images, styles or scripts', () => {
+    const html = renderInlineMarkdown('# Not a heading <img src="https://e.com/a.png"> <span style="color:red">s</span><script>alert(1)</script> ![alt](https://e.com/b.png)');
+    expect(html).not.toMatch(/<(h1|img|span|script|p)/);
+    expect(html).not.toContain('style=');
   });
 });

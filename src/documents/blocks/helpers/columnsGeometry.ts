@@ -122,11 +122,11 @@ export function computeColumns(count: number, gap: number, fixedWidths: FixedWid
  * Each column's outer width as a CSS percentage of the row (4 decimals). The
  * rounding remainder goes to the last column so the shares sum to exactly 100%.
  *
- * @param columns - Column boxes from computeColumns.
+ * @param columns - Column boxes from computeColumns (or any whole-px outer widths).
  * @param available - The row width the boxes were computed for.
  * @returns One percentage string per column, e.g. "33.3333%".
  */
-export function columnPercentages(columns: ColumnBox[], available: number) {
+export function columnPercentages(columns: Pick<ColumnBox, 'outer'>[], available: number) {
   const whole = 1_000_000; // 100% in units of 0.0001%
   const units = columns.map((c) => (available > 0 ? Math.round((c.outer / available) * whole) : 0));
   units[units.length - 1] += whole - units.reduce((a, b) => a + b, 0);

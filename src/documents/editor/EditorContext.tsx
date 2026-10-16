@@ -38,6 +38,10 @@ type TValue = {
   selectedScreenSize: 'desktop' | 'mobile';
 
   inspectorDrawerOpen: boolean;
+  /** Width of the inspector drawer in px (the user can drag it wider). */
+  inspectorDrawerWidth: number;
+  /** True while the user is dragging the inspector drawer's edge. */
+  inspectorDrawerResizing: boolean;
   readOnly: boolean;
 
   defaults: EmailBuilderDefaults | null;
@@ -47,6 +51,27 @@ type TValue = {
   documentLoads: number;
 };
 
+/** Inspector drawer width in px: the default, and the range the user can drag it to. */
+export const INSPECTOR_DRAWER_WIDTH = { default: 320, min: 320, max: 960 } as const;
+
+// Remembered per browser, so the panel opens at the width the user last dragged it to.
+const INSPECTOR_DRAWER_WIDTH_KEY = 'emailBuilder.inspectorDrawerWidth';
+
+/** A drawer width rounded to whole px within the draggable range (and at most `max`, when given). */
+export function clampInspectorDrawerWidth(width: number, max: number = INSPECTOR_DRAWER_WIDTH.max) {
+  const upper = Math.max(INSPECTOR_DRAWER_WIDTH.min, Math.min(max, INSPECTOR_DRAWER_WIDTH.max));
+  return Math.round(Math.min(Math.max(width, INSPECTOR_DRAWER_WIDTH.min), upper));
+}
+
+function storedInspectorDrawerWidth() {
+  try {
+    const stored = Number(window.localStorage.getItem(INSPECTOR_DRAWER_WIDTH_KEY));
+    return stored > 0 ? clampInspectorDrawerWidth(stored) : INSPECTOR_DRAWER_WIDTH.default;
+  } catch {
+    return INSPECTOR_DRAWER_WIDTH.default;
+  }
+}
+
 const editorStateStore = create<TValue>(() => ({
   document: getConfiguration(window.location.hash),
   selectedBlockId: null,
@@ -55,6 +80,8 @@ const editorStateStore = create<TValue>(() => ({
   selectedScreenSize: 'desktop',
 
   inspectorDrawerOpen: true,
+  inspectorDrawerWidth: storedInspectorDrawerWidth(),
+  inspectorDrawerResizing: false,
   readOnly: false,
 
   defaults: null,
@@ -176,6 +203,41 @@ export function useSelectedSidebarTab() {
  */
 export function useInspectorDrawerOpen() {
   return editorStateStore((s) => s.inspectorDrawerOpen);
+}
+
+/** Width of the inspector drawer in px. */
+export function useInspectorDrawerWidth() {
+  return editorStateStore((s) => s.inspectorDrawerWidth);
+}
+
+/** True while the user is dragging the inspector drawer's edge (layout transitions pause meanwhile). */
+export function useInspectorDrawerResizing() {
+  return editorStateStore((s) => s.inspectorDrawerResizing);
+}
+
+/**
+ * Set the inspector drawer's width, clamped to the draggable range, and remember it in this browser
+ * (storage failures, e.g. in a private window, are ignored: the width then lasts for the session).
+ *
+ * @param width - The width in px.
+ * @param options - `max`: a lower upper bound (the room the host page leaves); `persist: false` while dragging.
+ * @returns The width applied.
+ */
+export function setInspectorDrawerWidth(width: number, { max, persist = true }: { max?: number; persist?: boolean } = {}) {
+  const inspectorDrawerWidth = clampInspectorDrawerWidth(width, max);
+  editorStateStore.setState({ inspectorDrawerWidth });
+  if (persist) {
+    try {
+      window.localStorage.setItem(INSPECTOR_DRAWER_WIDTH_KEY, String(inspectorDrawerWidth));
+    } catch {
+      // Not remembered; the width still applies.
+    }
+  }
+  return inspectorDrawerWidth;
+}
+
+export function setInspectorDrawerResizing(inspectorDrawerResizing: boolean) {
+  return editorStateStore.setState({ inspectorDrawerResizing });
 }
 
 /**
@@ -363,7 +425,7 @@ export function setReadOnly(readOnly: boolean) {
 /**
  * Retrieve the current editor state object.
  *
- * @returns The full editor state containing `document`, `selectedBlockId`, `selectedSidebarTab`, `selectedMainTab`, `selectedScreenSize`, `inspectorDrawerOpen`, and `readOnly`.
+ * @returns The full editor state containing `document`, `selectedBlockId`, `selectedSidebarTab`, `selectedMainTab`, `selectedScreenSize`, `inspectorDrawerOpen`, `inspectorDrawerWidth`, and `readOnly`.
  */
 export function getEditorState() {
   return editorStateStore.getState();

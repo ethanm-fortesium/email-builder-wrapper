@@ -33,6 +33,8 @@ import SignaturePropsSchema from '../documents/blocks/Signature/SignaturePropsSc
 import SignatureReader from '../documents/blocks/Signature/SignatureReader.js';
 import RichTextPropsSchema from '../documents/blocks/RichText/RichTextPropsSchema.js';
 import RichTextReader from '../documents/blocks/RichText/RichTextReader.js';
+import TablePropsSchema from '../documents/blocks/Table/TablePropsSchema.js';
+import TableReader from '../documents/blocks/Table/TableReader.js';
 
 const ReaderContext = createContext<TReaderDocument>({});
 
@@ -92,6 +94,10 @@ const READER_DICTIONARY = buildBlockConfigurationDictionary({
   RichText: {
     schema: RichTextPropsSchema,
     Component: RichTextReader,
+  },
+  Table: {
+    schema: TablePropsSchema,
+    Component: TableReader,
   },
 });
 

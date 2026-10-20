@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import {
   AddBoxOutlined,
@@ -28,10 +28,11 @@ import {
   writeBlockToClipboard,
 } from '../blockClipboard.js';
 
+import useTuneMenuLeft from './useTuneMenuLeft.js';
+
 const sx: SxProps = {
   position: 'absolute',
   top: 0,
-  left: -56,
   borderRadius: 64,
   paddingX: 0.5,
   paddingY: 1,
@@ -43,6 +44,8 @@ type Props = {
 };
 export default function TuneMenu({ blockId }: Props) {
   const document = useDocument();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const left = useTuneMenuLeft(menuRef);
 
   const handleDeleteClick = () => {
     const filterChildrenIds = (childrenIds: string[] | null | undefined) => {
@@ -241,12 +244,19 @@ export default function TuneMenu({ blockId }: Props) {
   const defaults = useDefaults();
   const canSaveAsDefault = block?.type === 'Signature';
 
+  // The logo's natural size is recorded from its URL, not chosen by the user, so it does not
+  // count when comparing against the saved default (defaults saved before it existed lack it).
+  const withoutLogoSize = (props: Record<string, unknown> | null | undefined) => {
+    if (!props) return null;
+    const { logoNaturalWidth: _width, logoNaturalHeight: _height, ...rest } = props;
+    return rest;
+  };
   const isCurrentDefaultSignature =
     canSaveAsDefault &&
     !!defaults?.signature &&
     stableEqual(
-      { props: block?.data?.props ?? null, style: block?.data?.style ?? null },
-      { props: defaults.signature.props ?? null, style: defaults.signature.style ?? null }
+      { props: withoutLogoSize(block?.data?.props), style: block?.data?.style ?? null },
+      { props: withoutLogoSize(defaults.signature.props), style: defaults.signature.style ?? null }
     );
 
   const handleSaveAsDefaultClick = () => {
@@ -263,7 +273,7 @@ export default function TuneMenu({ blockId }: Props) {
   };
 
   return (
-    <Paper sx={sx} onClick={(ev) => ev.stopPropagation()}>
+    <Paper ref={menuRef} sx={{ ...sx, left }} onClick={(ev) => ev.stopPropagation()}>
       <Stack>
         <Tooltip title="Move up" placement="left-start">
           <IconButton onClick={() => handleMoveClick('up')} sx={{ color: 'text.primary' }}>

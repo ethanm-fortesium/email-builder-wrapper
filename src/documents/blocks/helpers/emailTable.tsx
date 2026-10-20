@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { FONT_FAMILIES } from './fontFamily.js';
+import { EmailBoxProvider, insetWidth, useEmailBox } from './emailBox.js';
 
 export type PaddingBox = {
   top?: number | null;
@@ -18,22 +18,9 @@ type EmailTableProps = {
   width?: number | string | null;
   fullWidth?: boolean;
   extraCellStyle?: React.CSSProperties;
+  /** Width in px of any border drawn on the cell via extraCellStyle (narrows the box for children). */
+  borderWidth?: number;
 };
-
-type FontKey = string | null | undefined;
-
-/**
- * Resolve a font key to its corresponding font-family string.
- *
- * @param fontKey - The font identifier to resolve; may be a predefined key or a literal font-family value.
- * @returns The matching font-family string from `FONT_FAMILIES` if present, the original `fontKey` when truthy, or `undefined` when `fontKey` is falsy or no mapping exists.
- */
-export function resolveFontFamily(fontKey: FontKey) {
-  if (!fontKey) {
-    return undefined;
-  }
-  return FONT_FAMILIES.find((item) => item.key === fontKey)?.value ?? fontKey ?? undefined;
-}
 
 /**
  * Convert a PaddingBox into a CSS padding string.
@@ -57,6 +44,9 @@ export function formatPadding(padding: PaddingBox) {
 /**
  * Render a single-cell, email-friendly table that wraps `children` with configurable alignment, padding, width, and background.
  *
+ * The cell re-provides the email box to its children: the parent width minus the
+ * cell's horizontal padding and border, and the cell background (when set).
+ *
  * @param children - Content rendered inside the table cell
  * @param align - Horizontal alignment for the cell: `'left' | 'center' | 'right'`
  * @param verticalAlign - Vertical alignment for the cell: `'top' | 'middle' | 'bottom'`
@@ -65,6 +55,7 @@ export function formatPadding(padding: PaddingBox) {
  * @param width - Table width (number interpreted as pixels, or a CSS string) used when `fullWidth` is false
  * @param fullWidth - If true, table width is forced to 100%; otherwise `width` is used
  * @param extraCellStyle - Additional CSS properties merged into the cell's style
+ * @param borderWidth - Width of a border set through `extraCellStyle`, subtracted from the children's width
  * @returns A JSX table element (single row, single cell) with the provided children and styles applied
  */
 export function EmailTable({
@@ -76,7 +67,10 @@ export function EmailTable({
   width,
   fullWidth = true,
   extraCellStyle,
+  borderWidth = 0,
 }: EmailTableProps) {
+  const box = useEmailBox();
+
   const tableStyle: React.CSSProperties = {
     width: '100%',
     borderCollapse: 'collapse',
@@ -109,7 +103,9 @@ export function EmailTable({
       <tbody>
         <tr>
           <td align={align} valign={verticalAlign} style={cellStyle} {...cellColorProps}>
-            {children}
+            <EmailBoxProvider width={insetWidth(box.width, padding, borderWidth)} background={backgroundColor}>
+              {children}
+            </EmailBoxProvider>
           </td>
         </tr>
       </tbody>

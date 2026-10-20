@@ -27,6 +27,9 @@ const EmailLayoutPropsSchema = z.object({
   borderRadius: z.number().optional().nullable(),
   canvasColor: COLOR_SCHEMA,
   textColor: COLOR_SCHEMA,
+  // Explicit link colour for exported links. Without one every client applies its
+  // own default (Chromium #0000EE, Gmail #1155CC, Outlook #0000FF).
+  linkColor: COLOR_SCHEMA,
   fontFamily: FONT_FAMILY_SCHEMA,
   baseFontSize: z.number().int().min(8).max(48).optional().nullable(),
   childrenIds: z.array(z.string()).optional().nullable(),

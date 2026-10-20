@@ -22,6 +22,12 @@ import {
     sanitizeRichTextHtml,
     decorateRichTextListMarkerColorsInPlace,
 } from '../../../../documents/blocks/RichText/sanitiseRichText.js';
+import {
+    normaliseLinkInput,
+    repairEmailHref,
+    repairEmailLinksInHtml,
+    validateLinkInput,
+} from '../../../../documents/blocks/helpers/linkHref.js';
 
 type Props = { data: RichTextProps; setData: (v: RichTextProps) => void };
 /**
@@ -58,34 +64,6 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
         } else {
             setErrors(res.error);
         }
-    };
-
-    const toUrlVariants = (raw: string) => {
-        const trimmed = raw.trim();
-        const normalized = trimmed ? (/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`) : '';
-        return { trimmed, normalized };
-    };
-
-    const validateUrl = (raw: string): string | null => {
-        const { trimmed, normalized } = toUrlVariants(raw);
-        if (!trimmed) return 'Enter a URL';
-        try {
-            const parsed = new URL(normalized);
-            if (!['http:', 'https:'].includes(parsed.protocol)) return 'Use http or https links only';
-            const host = parsed.hostname;
-            if (!host) return 'URL must include a host';
-            if (!host.includes('.')) return 'Domain must contain a dot (example.com)';
-            const tld = host.split('.').pop() || '';
-            if (tld.length < 2 || tld.length > 24 || !/^[a-z]+$/i.test(tld)) return 'Domain must end with letters';
-            return null;
-        } catch {
-            return 'URL is not valid';
-        }
-    };
-
-    const normalizeUrl = (raw: string): string => {
-        const { normalized } = toUrlVariants(raw);
-        return normalized;
     };
 
     const applyBlockStyles = (quill: any, style: any) => {
@@ -149,7 +127,8 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                 }
             };
 
-            const delta = quill.clipboard.convert(currentHtml);
+            // Email links saved as https://name@example.org by older builds load as mailto:.
+            const delta = quill.clipboard.convert(repairEmailLinksInHtml(currentHtml));
             quill.setContents(delta);
             applyBlockStyles(quill, latestDataRef.current?.style || {});
             decorateListMarkers();
@@ -304,9 +283,9 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                             const sel = editorRef.current?.getSelection();
                             if (!sel || sel.length === 0) return; 
                             const currentFormat = editorRef.current.getFormat(sel.index, sel.length);
-                            const currentLink = currentFormat.link || '';
+                            const currentLink = currentFormat.link ? repairEmailHref(currentFormat.link) : '';
                             setLinkValue(currentLink);
-                            setLinkError(currentLink ? validateUrl(currentLink) : 'Enter a URL');
+                            setLinkError(validateLinkInput(currentLink));
                             setLinkSelection({ index: sel.index, length: sel.length });
                             setLinkAnchor(e.currentTarget);
                         }}
@@ -371,11 +350,11 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setLinkValue(value);
-                                setLinkError(value ? validateUrl(value) : 'Enter a URL');
+                                setLinkError(validateLinkInput(value));
                             }}
                             autoFocus
                             error={Boolean(linkError)}
-                            helperText={linkError || 'Example: example.com or https://example.com'}
+                            helperText={linkError || 'Example: example.com or name@example.com'}
                             onKeyDown={(e) => {
                                 if (e.key === 'Escape') {
                                     setLinkAnchor(null);
@@ -383,16 +362,12 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                                 if (e.key === 'Enter') {
                                     if (linkSelection) {
                                         const { index, length } = linkSelection;
-                                        const normalized = normalizeUrl(linkValue);
-                                        if (!normalized) {
-                                            setLinkError('Enter a URL');
-                                            return;
-                                        }
-                                        const err = validateUrl(linkValue);
+                                        const err = validateLinkInput(linkValue);
                                         if (err) {
                                             setLinkError(err);
                                             return;
                                         }
+                                        const normalized = normaliseLinkInput(linkValue);
                                         editorRef.current.formatText(index, length, 'link', normalized);
                                     }
                                     setLinkAnchor(null);
@@ -414,13 +389,13 @@ export default function RichTextSidebarPanel({ data, setData }: Props) {
                                 <Button size="small" variant="outlined" onClick={() => { setLinkAnchor(null); setLinkError(null); }}>Cancel</Button>
                                 <Button size="small" variant="contained" onClick={() => {
                                     if (linkSelection) {
-                                        const err = validateUrl(linkValue);
+                                        const err = validateLinkInput(linkValue);
                                         if (err) {
                                             setLinkError(err);
                                             return;
                                         }
                                         const { index, length } = linkSelection;
-                                        const normalized = normalizeUrl(linkValue);
+                                        const normalized = normaliseLinkInput(linkValue);
                                         editorRef.current.formatText(index, length, 'link', normalized || false);
                                     }
                                     setLinkAnchor(null);

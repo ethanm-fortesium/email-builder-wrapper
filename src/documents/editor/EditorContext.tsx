@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
 import getConfiguration from '../../getConfiguration/index.js';
+import {
+  applyProbedImageDimensions,
+  probeImageDimensions,
+  probeMissingImageDimensions,
+  TImageDimensionProbe,
+  TProbedImage,
+} from '../blocks/helpers/imageDimensions.js';
 
 import { TEditorConfiguration } from './core.js';
 
@@ -31,11 +38,39 @@ type TValue = {
   selectedScreenSize: 'desktop' | 'mobile';
 
   inspectorDrawerOpen: boolean;
+  /** Width of the inspector drawer in px (the user can drag it wider). */
+  inspectorDrawerWidth: number;
+  /** True while the user is dragging the inspector drawer's edge. */
+  inspectorDrawerResizing: boolean;
   readOnly: boolean;
 
   defaults: EmailBuilderDefaults | null;
   toast: ToastState;
+
+  /** How many documents have been loaded (see loadDocument). */
+  documentLoads: number;
 };
+
+/** Inspector drawer width in px: the default, and the range the user can drag it to. */
+export const INSPECTOR_DRAWER_WIDTH = { default: 320, min: 320, max: 960 } as const;
+
+// Remembered per browser, so the panel opens at the width the user last dragged it to.
+const INSPECTOR_DRAWER_WIDTH_KEY = 'emailBuilder.inspectorDrawerWidth';
+
+/** A drawer width rounded to whole px within the draggable range (and at most `max`, when given). */
+export function clampInspectorDrawerWidth(width: number, max: number = INSPECTOR_DRAWER_WIDTH.max) {
+  const upper = Math.max(INSPECTOR_DRAWER_WIDTH.min, Math.min(max, INSPECTOR_DRAWER_WIDTH.max));
+  return Math.round(Math.min(Math.max(width, INSPECTOR_DRAWER_WIDTH.min), upper));
+}
+
+function storedInspectorDrawerWidth() {
+  try {
+    const stored = Number(window.localStorage.getItem(INSPECTOR_DRAWER_WIDTH_KEY));
+    return stored > 0 ? clampInspectorDrawerWidth(stored) : INSPECTOR_DRAWER_WIDTH.default;
+  } catch {
+    return INSPECTOR_DRAWER_WIDTH.default;
+  }
+}
 
 const editorStateStore = create<TValue>(() => ({
   document: getConfiguration(window.location.hash),
@@ -45,10 +80,14 @@ const editorStateStore = create<TValue>(() => ({
   selectedScreenSize: 'desktop',
 
   inspectorDrawerOpen: true,
+  inspectorDrawerWidth: storedInspectorDrawerWidth(),
+  inspectorDrawerResizing: false,
   readOnly: false,
 
   defaults: null,
   toast: null,
+
+  documentLoads: 0,
 }));
 
 let hostEventDispatcher: ((name: string, detail: unknown) => void) | null = null;
@@ -59,6 +98,47 @@ export function setHostEventDispatcher(fn: typeof hostEventDispatcher) {
 
 export function dispatchHostEvent(name: string, detail: unknown) {
   hostEventDispatcher?.(name, detail);
+}
+
+/** Applies a document update; `apply` must be called synchronously (or not at all). */
+export type TDocumentCommit = (apply: () => void) => void;
+
+const commitImmediately: TDocumentCommit = (apply) => apply();
+
+let backgroundUpdateScheduler: (() => TDocumentCommit) | null = null;
+
+// Which loaded document background updates belong to. Bumped by hydrateDocumentImageDimensions, which
+// runs right after every load of a document that can hold images (resetDocument cannot mark loads:
+// block moves and deletes use it too).
+let documentLoadGeneration = 0;
+
+/**
+ * Register how document updates the user did not make (e.g. backfilled image sizes) are applied.
+ * The web component uses this to report them to the host with origin 'programmatic'.
+ *
+ * @returns A function that unregisters `fn`, unless another scheduler has replaced it since.
+ */
+export function setBackgroundUpdateScheduler(fn: typeof backgroundUpdateScheduler) {
+  backgroundUpdateScheduler = fn;
+  return () => {
+    if (backgroundUpdateScheduler === fn) backgroundUpdateScheduler = null;
+  };
+}
+
+/**
+ * Call when starting async work whose result is not a user edit, and apply the result through the
+ * returned commit. Taking it up front lets the host side tell whether the user edited meanwhile.
+ *
+ * The update belongs to the document loaded when it began: once another document has been loaded
+ * the commit drops it (that load backfills its own document), so a result computed for the previous
+ * document never lands in the new one, where it could be reported as the user's change.
+ */
+export function beginBackgroundDocumentUpdate(): TDocumentCommit {
+  const generation = documentLoadGeneration;
+  const commit = backgroundUpdateScheduler?.() ?? commitImmediately;
+  return (apply) => {
+    if (generation === documentLoadGeneration) commit(apply);
+  };
 }
 
 let _apiBaseUrl: string | null = null;
@@ -125,6 +205,41 @@ export function useInspectorDrawerOpen() {
   return editorStateStore((s) => s.inspectorDrawerOpen);
 }
 
+/** Width of the inspector drawer in px. */
+export function useInspectorDrawerWidth() {
+  return editorStateStore((s) => s.inspectorDrawerWidth);
+}
+
+/** True while the user is dragging the inspector drawer's edge (layout transitions pause meanwhile). */
+export function useInspectorDrawerResizing() {
+  return editorStateStore((s) => s.inspectorDrawerResizing);
+}
+
+/**
+ * Set the inspector drawer's width, clamped to the draggable range, and remember it in this browser
+ * (storage failures, e.g. in a private window, are ignored: the width then lasts for the session).
+ *
+ * @param width - The width in px.
+ * @param options - `max`: a lower upper bound (the room the host page leaves); `persist: false` while dragging.
+ * @returns The width applied.
+ */
+export function setInspectorDrawerWidth(width: number, { max, persist = true }: { max?: number; persist?: boolean } = {}) {
+  const inspectorDrawerWidth = clampInspectorDrawerWidth(width, max);
+  editorStateStore.setState({ inspectorDrawerWidth });
+  if (persist) {
+    try {
+      window.localStorage.setItem(INSPECTOR_DRAWER_WIDTH_KEY, String(inspectorDrawerWidth));
+    } catch {
+      // Not remembered; the width still applies.
+    }
+  }
+  return inspectorDrawerWidth;
+}
+
+export function setInspectorDrawerResizing(inspectorDrawerResizing: boolean) {
+  return editorStateStore.setState({ inspectorDrawerResizing });
+}
+
 /**
  * Indicates whether the editor is in read-only mode.
  *
@@ -178,6 +293,23 @@ export function resetDocument(document: TValue['document']) {
 }
 
 /**
+ * Replace the document with a newly loaded one: imported, opened by the host or started empty.
+ * Unlike resetDocument (which block moves and deletes also use), this counts as a load, so
+ * panels that copy document values into their own state (the Styles panel) show the new ones.
+ *
+ * @param document - The loaded document
+ */
+export function loadDocument(document: TValue['document']) {
+  resetDocument(document);
+  editorStateStore.setState((state) => ({ documentLoads: state.documentLoads + 1 }));
+}
+
+/** How many documents have been loaded; changes each time loadDocument runs. */
+export function useDocumentLoads() {
+  return editorStateStore((s) => s.documentLoads);
+}
+
+/**
  * Merge the provided document properties into the current editor document in the store.
  *
  * @param document - Document object whose properties will be merged into the existing document; provided fields override existing values
@@ -190,6 +322,45 @@ export function setDocument(document: TValue['document']) {
       ...document,
     },
   });
+}
+
+/**
+ * Merge probed natural image sizes into the CURRENT document.
+ *
+ * Results are matched against each block's current image URL, so a probe that resolves after the
+ * image was replaced (or the block deleted) is ignored, and only the size fields are written so
+ * edits made while the probe was in flight are kept.
+ *
+ * @param results - Probe results keyed by block id and the URL that was probed
+ * @param commit - How to apply the update; defaults to a plain (user-flow) document update
+ * @returns `true` if the document changed (false too when the commit dropped the update)
+ */
+export function recordImageDimensions(results: TProbedImage[], commit: TDocumentCommit = commitImmediately) {
+  const next = applyProbedImageDimensions(editorStateStore.getState().document, results);
+  if (!next) return false;
+  let applied = false;
+  commit(() => {
+    editorStateStore.setState({ document: next });
+    applied = true;
+  });
+  return applied;
+}
+
+/**
+ * Backfill natural sizes for images in the just-loaded document that lack them (documents saved
+ * before sizes were recorded). Runs in the background and applies the result as a background
+ * (non-user) update without touching the selection.
+ *
+ * Call it once per load, right after loading the document: it supersedes background updates begun
+ * for the previous document (see beginBackgroundDocumentUpdate).
+ *
+ * @returns `true` if the document was updated
+ */
+export async function hydrateDocumentImageDimensions(probe: TImageDimensionProbe = probeImageDimensions) {
+  documentLoadGeneration += 1;
+  const commit = beginBackgroundDocumentUpdate();
+  const results = await probeMissingImageDimensions(editorStateStore.getState().document, probe);
+  return recordImageDimensions(results, commit);
 }
 
 /**
@@ -254,7 +425,7 @@ export function setReadOnly(readOnly: boolean) {
 /**
  * Retrieve the current editor state object.
  *
- * @returns The full editor state containing `document`, `selectedBlockId`, `selectedSidebarTab`, `selectedMainTab`, `selectedScreenSize`, `inspectorDrawerOpen`, and `readOnly`.
+ * @returns The full editor state containing `document`, `selectedBlockId`, `selectedSidebarTab`, `selectedMainTab`, `selectedScreenSize`, `inspectorDrawerOpen`, `inspectorDrawerWidth`, and `readOnly`.
  */
 export function getEditorState() {
   return editorStateStore.getState();

@@ -7,12 +7,20 @@ import { clampCanvasWidth, getFontFamily } from './emailLayoutShared.js';
 
 import { EmailLayoutProps } from './EmailLayoutPropsSchema.js';
 
+// The layout's link colour, for links on the canvas that do not set their own (markdown text, rich
+// text, HTML), as the export colours them. The colour is passed in a custom property, so the rule
+// itself is static; a colour set on the link itself (e.g. a button's) still wins.
+const LINK_COLOR_CLASS = 'email-builder-canvas-links';
+const LINK_COLOR_PROPERTY = '--email-builder-link-color';
+const LINK_COLOR_RULE = `.${LINK_COLOR_CLASS} a { color: var(${LINK_COLOR_PROPERTY}); }`;
+
 export default function EmailLayoutEditor(props: EmailLayoutProps) {
   const childrenIds = props.childrenIds ?? [];
   const document = useDocument();
   const currentBlockId = useCurrentBlockId();
   const radius = props.borderRadius ?? 0;
   const effectiveCanvasWidth = clampCanvasWidth(props.canvasWidth);
+  const linkColor = props.linkColor ?? undefined;
 
   return (
     <div
@@ -29,8 +37,10 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
       }}
     >
       <div
+        className={linkColor ? LINK_COLOR_CLASS : undefined}
         style={{
           '--canvas-radius': radius ? `${radius}px` : '0px',
+          [LINK_COLOR_PROPERTY]: linkColor,
           margin: '0 auto',
           maxWidth: `${effectiveCanvasWidth}px`,
           backgroundColor: props.canvasColor ?? '#FFFFFF',
@@ -39,6 +49,7 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
           boxSizing: 'border-box',
         } as React.CSSProperties}
       >
+        {linkColor && <style>{LINK_COLOR_RULE}</style>}
         <table
           role="presentation"
           width="100%"
@@ -49,7 +60,9 @@ export default function EmailLayoutEditor(props: EmailLayoutProps) {
         >
           <tbody>
             <tr style={{ width: '100%' }}>
-              <td style={{ padding: 0 }}>
+              {/* A word too long for the canvas (a long URL or reference) wraps, as it does in the
+                  exported email, instead of stretching this table and every block past the canvas. */}
+              <td style={{ padding: 0, overflowWrap: 'anywhere' }}>
                 <EditorChildrenIds
                   childrenIds={childrenIds}
                   onChange={({ block, blockId, childrenIds }) => {

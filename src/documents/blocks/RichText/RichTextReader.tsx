@@ -1,48 +1,48 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
-import { EmailTable, resolveFontFamily } from '../helpers/emailTable.js';
+import { insetWidth, useEmailBox } from '../helpers/emailBox.js';
+import { EmailTable } from '../helpers/emailTable.js';
+import { resolveTypography, textStyle, useTypography } from '../helpers/emailTypography.js';
 
 import { RichTextProps } from './RichTextPropsSchema.js';
 import { sanitizeRichText } from './sanitiseRichText.js';
 
 /**
- * Render sanitized rich text into a styled container.
+ * Render sanitized rich text into a styled container for the exported email.
  *
- * Applies provided style values (color, backgroundColor, fontFamily — resolved via FONT_FAMILIES when possible, fontSize in pixels, fontWeight, textAlign, and padding as top/right/bottom/left) to the wrapper element.
+ * The wrapper carries the complete resolved typography (layout defaults plus the block's colour,
+ * font family - a FONT_FAMILIES key or a literal stack -, font size, weight and unitless line-height
+ * ratio), because classic Outlook (Word) does not inherit it into nested tables. The HTML is
+ * sanitised and normalised for Word: lists, links (readable on dark backgrounds), images, tall
+ * lines, Quill class formats and tokens too wide for the block.
  *
- * @param style - Optional style overrides for the wrapper; padding may be an object with top/right/bottom/left numeric values.
- * @param props - Rich-text source; `props.html` is used if present, otherwise `props.initial` is used, falling back to an empty string.
- * @returns A JSX element containing the sanitized HTML with links decorated.
+ * @param style - Optional block style; `padding` and `backgroundColor` apply to the table cell, the rest to the wrapper.
+ * @param props - Rich-text source; `props.html` is used if present, otherwise `props.initial`, falling back to an empty string.
+ * @returns The sanitized, normalised HTML inside an EmailTable.
  */
 export default function RichTextReader({ style, props }: RichTextProps) {
-  const html = props?.html || props?.initial || '';
-  const sanitisedHtml = useMemo(() => sanitizeRichText(html, { decorateLinks: true }), [html]);
-
-  const cellPadding = style?.padding ?? undefined;
+  const layoutTypography = useTypography();
+  const box = useEmailBox();
+  const typography = resolveTypography(layoutTypography, {
+    fontFamily: style?.fontFamily,
+    fontSize: style?.fontSize,
+    lineHeight: style?.lineHeight,
+    color: style?.color,
+    fontWeight: style?.fontWeight,
+  });
+  const padding = style?.padding ?? undefined;
   const backgroundColor = style?.backgroundColor ?? undefined;
-
-  const contentStyle: React.CSSProperties = {
-    color: style?.color ?? undefined,
-    fontFamily: resolveFontFamily(style?.fontFamily ?? undefined),
-    fontSize: style?.fontSize ? `${style.fontSize}px` : undefined,
-    fontWeight: style?.fontWeight ?? undefined,
-    lineHeight: style?.lineHeight ? `${Math.round(style.lineHeight * 100)}%` : undefined,
-    textAlign: style?.textAlign ?? undefined,
-  };
-
-  // mso-line-height-rule is not a valid React CSS property so we inject it via
-  // a wrapping <div> with a raw style string when lineHeight is set.
-  const msoWrapper = style?.lineHeight
-    ? { open: '<div style="mso-line-height-rule:exactly">', close: '</div>' }
-    : null;
-
-  const wrappedHtml = msoWrapper
-    ? `${msoWrapper.open}${sanitisedHtml}${msoWrapper.close}`
-    : sanitisedHtml;
+  const html = sanitizeRichText(props?.html || props?.initial || '', {
+    decorateLinks: true,
+    email: { typography, width: insetWidth(box.width, padding), background: backgroundColor ?? box.background },
+  });
 
   return (
-    <EmailTable backgroundColor={backgroundColor} padding={cellPadding as any}>
-      <div style={contentStyle} dangerouslySetInnerHTML={{ __html: wrappedHtml }} />
+    <EmailTable backgroundColor={backgroundColor} padding={padding}>
+      <div
+        style={{ ...textStyle(typography), textAlign: style?.textAlign ?? undefined }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </EmailTable>
   );
 }

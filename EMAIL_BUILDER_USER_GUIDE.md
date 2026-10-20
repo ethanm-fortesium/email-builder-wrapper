@@ -160,6 +160,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - **Canvas width** - Email width: Standard (600px) or Wide (900px)
 - **Font family** - Default typeface for entire email
 - **Text colour** - Default text colour
+- **Link colour** (optional) - Colour of links in the email. Leave empty for the standard link blue (#0000EE). Setting it explicitly makes links look the same in every email client (Gmail, Outlook and others otherwise each use their own blue)
 
 **When to use:**
 - Set global typography preferences
@@ -316,6 +317,8 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 - Use containers to organise visual sections
 - Combine with text/image blocks inside
 - Apply background colours for emphasis
+- When using a border radius, keep the padding at least as large as the radius so content stays clear of the rounded corners
+- Classic Outlook (desktop) does not support rounded corners, so containers and the email canvas show square corners there
 
 ---
 
@@ -324,7 +327,7 @@ Each block type has unique properties accessible in the **Inspector Drawer** und
 
 **Configuration Options:**
 - **Number of columns** - 2 or 3 columns
-- **Column widths** - Custom width for each column
+- **Column widths** - Custom width for each column's content. Columns without a width share the remaining space; if the widths don't fit (or every column has one), they are scaled to fill the row
 - **Columns gap** - Space between columns (px)
 - **Stack on mobile** - On (default): columns collapse to a single stacked column on narrow/mobile screens. Off: columns stay side-by-side on every device.
 - **Alignment** - Vertical alignment (top/middle/bottom)
@@ -401,9 +404,11 @@ The Rich Text Editor provides a toolbar with:
 
 **Links:**
 - **Link button** - Add clickable hyperlinks
-  - Dialog appears to enter URL
-  - Validates URL format
-  - Supports http/https only
+  - Dialog appears to enter a web address, email address or phone number
+  - Web addresses without `https://` get it added (`example.com` → `https://example.com`)
+  - Email addresses become email links: type `name@example.com` or `mailto:name@example.com`
+  - Phone numbers need `tel:` (e.g. `tel:+14165981725`)
+  - Validates the format before saving
 
 **Colours:**
 - **Text colour** - Change text colour
@@ -472,6 +477,36 @@ The Rich Text Editor provides a toolbar with:
 
 ---
 
+### 14. **Table Block**
+**Purpose:** Show information in rows and columns: fees, contact details, a summary of someone's record.
+
+**Configuration Options:**
+- **Cells** - Type into the grid in the Inspect tab. Line breaks inside a cell are kept
+- **Paste from a spreadsheet** - Copy cells in Excel or Google Sheets and paste them into any cell; the table fills from that cell and grows to fit (up to 8 columns and 100 rows)
+- **Column settings** - Click a column's button above the grid to set its alignment and width, or to insert, move or delete it. Leave the width empty and the column fits its content
+- **Row menu** (⋮) - Insert, move or delete a row
+- **Header row** - Shows the first row in bold as column headings
+- **Header column** - Shows the first column in bold as row labels (useful for "Name: …, Registration number: …" tables)
+- **Markdown** - Lets cells use **bold**, _italic_ and [links](https://example.org)
+- **Borders** - None, Rows (lines between rows), Framed (lines between rows and a frame) or Grid (every cell)
+- **Border colour**, **Header background**, **Header text colour**
+- **Alternate row background** - Shades every second row
+- **Cell padding** - Space inside each cell
+- **Text colour, background, font and font size** - For the whole table
+
+**Example uses:**
+- Fee schedules and payment summaries
+- Registration details for a recipient (with `{{merge tokens}}` in the cells)
+- Office addresses and opening hours
+
+**Tips:**
+- Keep tables to 2–4 columns: phones show every column side by side, so wide tables get cramped
+- Right-align columns of amounts so the figures line up
+- Merge tokens work in any cell and are never split
+- Tables look the same in classic Outlook as in other email clients
+
+---
+
 ## Inspector Drawer
 
 Located on the right side of the application, the Inspector Drawer provides detailed configuration for selected blocks.
@@ -479,6 +514,12 @@ Located on the right side of the application, the Inspector Drawer provides deta
 ### Opening/Closing
 - Click the toggle button (top-right, "Inspector" icon) to open/close
 - Inspector hides when no block is selected
+
+### Resizing
+- Drag the drawer's left edge to make it wider (useful for tables with several columns) or narrower
+- Double-click the edge to return to the default width
+- From the keyboard: focus the edge with Tab, then use the arrow keys (hold Shift for bigger steps); Enter resets it
+- The editor remembers the width in your browser
 
 ### Two Tabs
 

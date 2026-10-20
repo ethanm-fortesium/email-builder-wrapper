@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { resetDocument } from '../../../documents/editor/EditorContext.js';
+import { hydrateDocumentImageDimensions, loadDocument } from '../../../documents/editor/EditorContext.js';
 
 import validateJsonStringValue from './validateJsonStringValue.js';
 
@@ -46,7 +46,9 @@ export default function ImportJsonDialog({ onClose }: ImportJsonDialogProps) {
           if (!data) {
             return;
           }
-          resetDocument(data);
+          loadDocument(data);
+          // Backfill natural image sizes the imported JSON may lack (needed by the Outlook export).
+          void hydrateDocumentImageDimensions();
           onClose();
         }}
       >

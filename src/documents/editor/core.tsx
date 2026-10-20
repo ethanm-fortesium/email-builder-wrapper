@@ -6,7 +6,7 @@ import { Button, ButtonPropsSchema } from '@usewaypoint/block-button';
 import { Divider, DividerPropsSchema } from '@usewaypoint/block-divider';
 import { Heading, HeadingPropsSchema } from '@usewaypoint/block-heading';
 import { Html, HtmlPropsSchema } from '@usewaypoint/block-html';
-import { Image, ImagePropsSchema } from '@usewaypoint/block-image';
+import { Image } from '@usewaypoint/block-image';
 import { Spacer, SpacerPropsSchema } from '@usewaypoint/block-spacer';
 import { Text, TextPropsSchema } from '@usewaypoint/block-text';
 import {
@@ -15,6 +15,9 @@ import {
   buildBlockConfigurationSchema,
 } from '@usewaypoint/document-core';
 
+// Image uses an extended schema that also keeps the recorded natural image size (upstream zod
+// objects strip unknown keys, so every parse site must go through it).
+import ImagePropsSchema from '../blocks/Image/ImagePropsSchema.js';
 import ColumnsContainerEditor from '../blocks/ColumnsContainer/ColumnsContainerEditor.js';
 import ColumnsContainerPropsSchema from '../blocks/ColumnsContainer/ColumnsContainerPropsSchema.js';
 import ContainerEditor from '../blocks/Container/ContainerEditor.js';
@@ -26,6 +29,8 @@ import SignatureEditor from '../blocks/Signature/SignatureEditor.js';
 import SignaturePropsSchema from '../blocks/Signature/SignaturePropsSchema.js';
 import RichTextEditor from '../blocks/RichText/RichTextEditor.js';
 import RichTextPropsSchema from '../blocks/RichText/RichTextPropsSchema.js';
+import TableEditor from '../blocks/Table/TableEditor.js';
+import TablePropsSchema from '../blocks/Table/TablePropsSchema.js';
 
 const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
   Avatar: {
@@ -146,6 +151,14 @@ const EDITOR_DICTIONARY = buildBlockConfigurationDictionary({
     Component: (props) => (
       <EditorBlockWrapper>
         <RichTextEditor {...props} />
+      </EditorBlockWrapper>
+    ),
+  },
+  Table: {
+    schema: TablePropsSchema,
+    Component: (props) => (
+      <EditorBlockWrapper>
+        <TableEditor {...props} />
       </EditorBlockWrapper>
     ),
   },

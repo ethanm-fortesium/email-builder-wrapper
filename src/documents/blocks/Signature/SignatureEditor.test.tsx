@@ -1,4 +1,4 @@
-// @vitest-environment happy-dom
+// @vitest-environment jsdom
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -37,7 +37,8 @@ const layout = (childrenIds: string[]) => ({
 function disclaimerColor(html: string) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const cell = Array.from(doc.querySelectorAll('td')).find((td) => td.firstElementChild?.textContent === 'Confidential.');
-  return (cell as HTMLElement | undefined)?.style.color;
+  // The literal value in the markup; style.color would be normalised to rgb() by jsdom
+  return cell?.getAttribute('style')?.match(/(?:^|;)\s*color:\s*([^;]+)/i)?.[1].trim();
 }
 
 /** Load the document and return the disclaimer colour on the canvas and in the export. */

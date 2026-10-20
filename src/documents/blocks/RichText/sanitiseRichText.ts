@@ -8,6 +8,7 @@ import {
   QUILL_LIST_MARGIN_BOTTOM_EM,
   normaliseEmailElement,
 } from '../helpers/emailHtmlNormaliser.js';
+import { repairEmailLinksInHtml } from '../helpers/linkHref.js';
 
 type SanitizeOptions = Parameters<typeof DOMPurify.sanitize>[1];
 
@@ -235,7 +236,8 @@ const applyParagraphStyling = (root: ParentNode) => {
  */
 export const sanitizeRichTextHtml = (html: string): string => {
   if (!html) return '';
-  const sanitized = DOMPurify.sanitize(html, BASE_CONFIG);
+  // Email links saved as https://name@example.org by older builds become mailto: again.
+  const sanitized = repairEmailLinksInHtml(DOMPurify.sanitize(html, BASE_CONFIG));
   // Normalize non-breaking spaces that act as word separators (emitted by Quill
   // or pasted from Word/Outlook) to regular spaces so text wraps correctly.
   // Only targets isolated &nbsp; between non-space characters; preserves

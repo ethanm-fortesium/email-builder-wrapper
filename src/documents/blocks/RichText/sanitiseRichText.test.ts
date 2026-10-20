@@ -124,6 +124,17 @@ describe('link styling', () => {
     expect(result).toContain('href="https://example.com"');
     expect(result).toContain('link</a>');
   });
+
+  it('repairs email links saved as https://name@domain by older builds', () => {
+    const input =
+      '<p><a href="https://quality.assurance@collegeofdietitians.org" target="_blank">quality.assurance@collegeofdietitians.org</a>' +
+      ' <a href="https://mailto:info@collegeofdietitians.org" target="_blank">us</a></p>';
+    expect(sanitizeRichTextHtml(input)).toContain('href="mailto:quality.assurance@collegeofdietitians.org"');
+    const result = sanitizeRichText(input, { decorateLinks: true, email: EMAIL });
+    expect(result).toContain('href="mailto:quality.assurance@collegeofdietitians.org"');
+    expect(result).toContain('href="mailto:info@collegeofdietitians.org"');
+    expect(result).not.toContain('https://');
+  });
 });
 
 // ---------------------------------------------------------------------------
